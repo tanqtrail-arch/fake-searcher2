@@ -1,0 +1,3095 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAKE SEARCHER - AIのウソ、見抜けるか？</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: #05050a; 
+      min-height: 100vh; 
+      color: #fff;
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 40%);
+    }
+    
+    /* ===== HEADER ===== */
+    .header { 
+      background: rgba(5, 5, 10, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 12px 20px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .back-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #888;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .back-btn.show { display: flex; }
+    .logo { 
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .logo-icon { font-size: 20px; }
+    .logo-text { 
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .logo-fake { 
+      color: #05050a;
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      padding: 2px 10px;
+      border-radius: 6px;
+    }
+    .logo-searcher { 
+      color: #fff; 
+      margin-left: 6px;
+    }
+    .header-stats { 
+      background: rgba(255,255,255,0.05); 
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 8px 16px; 
+      border-radius: 20px; 
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .header-stats .human { color: #6366f1; }
+    .header-stats .ai-score { color: #ec4899; }
+    
+    /* ===== NAV TABS ===== */
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      padding: 12px 20px;
+      background: rgba(5, 5, 10, 0.8);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .nav-tab {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-tab:hover { color: #aaa; background: rgba(255,255,255,0.03); }
+    .nav-tab.active { color: #6366f1; background: rgba(99, 102, 241, 0.1); }
+    .nav-tab .icon { font-size: 16px; }
+    
+    /* ===== CONTAINER ===== */
+    .container { max-width: 800px; margin: 0 auto; padding: 24px 20px; }
+    
+    /* ===== SCREENS ===== */
+    .screen { display: none; }
+    .screen.active { display: block; }
+    
+    /* ===== HOME SCREEN ===== */
+    .hero { text-align: center; margin-bottom: 32px; }
+    .hero-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .hero-logo .icon { font-size: 42px; }
+    .hero-logo .text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 52px;
+      letter-spacing: 3px;
+      display: flex;
+      align-items: center;
+    }
+    .hero-logo .fake { 
+      color: #05050a;
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      padding: 4px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
+    }
+    .hero-logo .searcher { 
+      color: #fff;
+      margin-left: 10px;
+    }
+    .hero-tagline { font-size: 14px; color: #888; letter-spacing: 1px; }
+    
+    .vs-mini {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin: 24px 0;
+      padding: 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+    }
+    .vs-mini-side { text-align: center; }
+    .vs-mini-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 6px;
+    }
+    .vs-mini-avatar.human { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .vs-mini-avatar.ai { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+    .vs-mini-label { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+    .vs-mini-score { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 900; }
+    .vs-mini-score.human { color: #6366f1; }
+    .vs-mini-score.ai { color: #ec4899; }
+    .vs-mini-text { font-family: 'Orbitron', sans-serif; font-size: 14px; color: #333; }
+    
+    .section { margin-bottom: 28px; }
+    .section-label {
+      font-size: 11px;
+      color: #888;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-label .icon { font-size: 14px; }
+    
+    /* Grade Slider */
+    .grade-selector {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .grade-display { text-align: center; margin-bottom: 16px; }
+    .grade-display-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+      color: #6366f1;
+    }
+    .grade-display-desc { font-size: 12px; color: #888; margin-top: 2px; }
+    .grade-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    .grade-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+    .grade-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 10px;
+      color: #555;
+    }
+    
+    /* Topic Grid */
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .topic-btn {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .topic-btn:hover { border-color: rgba(99, 102, 241, 0.3); }
+    .topic-btn.selected {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+    }
+    .topic-btn-icon { font-size: 24px; margin-bottom: 6px; }
+    .topic-btn-text { font-size: 11px; font-weight: 600; }
+    
+    /* Keyword Input */
+    .keyword-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .keyword-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #fff;
+      outline: none;
+    }
+    .keyword-input::placeholder { color: #555; }
+    .keyword-input:focus { border-color: #6366f1; }
+    .keyword-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .keyword-tag {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      color: #6366f1;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .keyword-tag:hover { background: rgba(99, 102, 241, 0.2); }
+    
+    /* NG Alert */
+    .ng-alert {
+      display: none;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+    .ng-alert.show { display: block; animation: shake 0.3s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+    .ng-alert-title { font-size: 13px; font-weight: 700; color: #ef4444; margin-bottom: 8px; }
+    .ng-alert-message { font-size: 12px; color: #aaa; margin-bottom: 12px; }
+    .ng-suggestions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ng-suggestion {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    /* Difficulty */
+    .difficulty-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .diff-btn {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .diff-btn:hover { border-color: rgba(255,255,255,0.2); }
+    .diff-btn.selected { border-color: #6366f1; background: rgba(99, 102, 241, 0.1); }
+    .diff-btn-icon { font-size: 20px; margin-bottom: 4px; }
+    .diff-btn-text { font-size: 10px; font-weight: 900; letter-spacing: 1px; }
+    .diff-btn.easy .diff-btn-text { color: #22c55e; }
+    .diff-btn.normal .diff-btn-text { color: #6366f1; }
+    .diff-btn.hard .diff-btn-text { color: #ec4899; }
+    .diff-btn.nightmare .diff-btn-text { color: #a855f7; }
+    
+    /* Mode Selection */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .mode-btn {
+      background: rgba(255,255,255,0.02);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .mode-btn:hover { border-color: rgba(99, 102, 241, 0.3); }
+    .mode-btn.selected { border-color: #6366f1; background: rgba(99, 102, 241, 0.08); }
+    .mode-btn-icon { font-size: 32px; margin-bottom: 8px; }
+    .mode-btn-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .mode-btn-desc { font-size: 11px; color: #888; }
+    
+    /* Start Button */
+    .start-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      border: none;
+      padding: 18px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+      transition: all 0.2s;
+    }
+    .start-btn:hover { transform: translateY(-2px); }
+    
+    /* ===== QUIZ SCREEN ===== */
+    .quiz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .quiz-badge {
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .quiz-badge.topic { background: rgba(99,102,241,0.2); color: #6366f1; }
+    .quiz-badge.difficulty { background: rgba(236,72,153,0.2); color: #ec4899; }
+    .quiz-badge.human-made { background: rgba(251,191,36,0.2); color: #fbbf24; }
+    
+    .quiz-content {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .quiz-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .facts-list { display: flex; flex-direction: column; gap: 10px; }
+    .fact-item {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .fact-num {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .fact-text { font-size: 14px; line-height: 1.6; color: #ccc; }
+    
+    .quiz-question {
+      background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(168,85,247,0.08));
+      border: 1px solid rgba(236,72,153,0.2);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .quiz-question-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .quiz-question-icon { font-size: 28px; }
+    .quiz-question-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #ec4899;
+      letter-spacing: 1px;
+    }
+    
+    .answer-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .answer-btn {
+      background: rgba(255,255,255,0.02);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+    .answer-btn:hover { border-color: #6366f1; }
+    .answer-btn.selected { border-color: #6366f1; background: rgba(99,102,241,0.1); }
+    .answer-btn.correct { border-color: #22c55e; background: rgba(34,197,94,0.15); }
+    .answer-btn.wrong { border-color: #ec4899; background: rgba(236,72,153,0.15); }
+    .answer-btn.disabled { pointer-events: none; }
+    .answer-letter {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .answer-btn.selected .answer-letter { background: #6366f1; }
+    .answer-btn.correct .answer-letter { background: #22c55e; }
+    .answer-btn.wrong .answer-letter { background: #ec4899; }
+    .answer-text { font-size: 13px; line-height: 1.4; color: #ccc; }
+    
+    .submit-answer-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 16px;
+      box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+    }
+    .submit-answer-btn:disabled {
+      background: rgba(255,255,255,0.05);
+      color: #555;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    
+    /* ===== RESULT SCREEN ===== */
+    .result-screen { text-align: center; padding: 32px 0; }
+    .result-icon { font-size: 80px; margin-bottom: 20px; }
+    .result-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 36px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    .result-title.win { color: #6366f1; }
+    .result-title.lose { color: #ec4899; }
+    .result-subtitle { font-size: 16px; color: #888; margin-bottom: 32px; }
+    
+    .result-bar {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .result-bar-title { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .result-bar-track {
+      height: 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+    }
+    .result-bar-human {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .result-bar-ai {
+      height: 100%;
+      background: linear-gradient(90deg, #a855f7, #ec4899);
+      display: flex;
+      align-items: center;
+      padding-left: 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    
+    .result-explain {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .result-explain-label { font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .result-explain-answer {
+      font-size: 14px;
+      font-weight: 700;
+      color: #22c55e;
+      background: rgba(34,197,94,0.1);
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    .result-explain-text { font-size: 13px; color: #aaa; line-height: 1.7; }
+    
+    .result-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 32px;
+    }
+    .result-stat { text-align: center; }
+    .result-stat-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+    }
+    .result-stat-value.positive { color: #6366f1; }
+    .result-stat-value.negative { color: #ec4899; }
+    .result-stat-label { font-size: 11px; color: #888; margin-top: 4px; }
+    
+    .result-btns { display: flex; gap: 12px; justify-content: center; }
+    .result-btn {
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+    }
+    .result-btn.primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+    }
+    .result-btn.secondary {
+      background: rgba(255,255,255,0.05);
+      color: #888;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* ===== FEED SCREEN ===== */
+    .feed-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .feed-title { font-size: 20px; font-weight: 700; }
+    .feed-filter {
+      display: flex;
+      gap: 6px;
+    }
+    .filter-chip {
+      padding: 8px 14px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #888;
+    }
+    .filter-chip.active {
+      background: rgba(99,102,241,0.1);
+      border-color: rgba(99,102,241,0.3);
+      color: #6366f1;
+    }
+    
+    .quiz-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quiz-card:hover {
+      border-color: rgba(99,102,241,0.3);
+      transform: translateY(-2px);
+    }
+    .quiz-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .quiz-card-author {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .quiz-card-avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .quiz-card-author-name { font-size: 13px; font-weight: 600; }
+    .quiz-card-author-grade { font-size: 11px; color: #888; }
+    .quiz-card-trap {
+      background: linear-gradient(135deg, rgba(236,72,153,0.2), rgba(168,85,247,0.2));
+      color: #ec4899;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .quiz-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .quiz-card-preview {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .quiz-card-footer {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: #666;
+    }
+    .quiz-card-stat {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    /* ===== CREATE SCREEN ===== */
+    .create-header { text-align: center; margin-bottom: 28px; }
+    .create-icon { font-size: 48px; margin-bottom: 12px; }
+    .create-title { font-size: 24px; font-weight: 900; margin-bottom: 4px; }
+    .create-title .highlight { color: #ec4899; }
+    .create-subtitle { font-size: 13px; color: #888; }
+    
+    .create-section { margin-bottom: 24px; }
+    .create-section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .create-section-num {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .create-section-title { font-size: 14px; font-weight: 700; }
+    
+    .create-input-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .create-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+      resize: none;
+    }
+    .create-input::placeholder { color: #555; }
+    
+    .fact-cards { display: flex; flex-direction: column; gap: 10px; }
+    .fact-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .fact-card.fake { border-color: rgba(236,72,153,0.3); background: rgba(236,72,153,0.05); }
+    .fact-card-num {
+      width: 32px;
+      height: 32px;
+      background: rgba(99,102,241,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 12px;
+      color: #6366f1;
+      flex-shrink: 0;
+    }
+    .fact-card.fake .fact-card-num { background: linear-gradient(135deg, #ec4899, #f43f5e); color: #fff; }
+    .fact-card-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      resize: none;
+    }
+    .fact-card-input::placeholder { color: #555; }
+    .fact-card-label {
+      font-size: 10px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .fact-card-label .badge {
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 9px;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+    
+    .grade-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .grade-chip {
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #888;
+    }
+    .grade-chip.selected {
+      border-color: #6366f1;
+      background: rgba(99,102,241,0.1);
+      color: #6366f1;
+      font-weight: 600;
+    }
+    
+    .create-submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      color: #fff;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(236,72,153,0.3);
+      margin-top: 20px;
+    }
+    .create-submit-btn:disabled {
+      background: rgba(255,255,255,0.1);
+      color: #555;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    
+    /* ===== LOADING ===== */
+    .loading { text-align: center; padding: 80px 20px; }
+    .loading-icon { font-size: 64px; margin-bottom: 20px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.8} }
+    .loading-text { font-family: 'Orbitron'; font-size: 16px; color: #6366f1; letter-spacing: 2px; }
+    .loading-subtext { font-size: 13px; color: #888; margin-top: 8px; }
+    
+    /* ===== WEREWOLF ===== */
+    .werewolf-start { text-align: center; padding: 24px 0; }
+    .werewolf-icon { font-size: 64px; margin-bottom: 16px; }
+    .werewolf-title { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 2px; margin-bottom: 8px; }
+    .werewolf-title .highlight { color: #a78bfa; }
+    .werewolf-subtitle { font-size: 14px; color: #888; margin-bottom: 12px; }
+    .werewolf-badge { display: inline-block; background: rgba(139,92,246,0.2); color: #a78bfa; padding: 6px 14px; border-radius: 12px; font-size: 12px; font-weight: 700; margin-bottom: 16px; }
+    .wolf-vs-box { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; margin-bottom: 20px; }
+    .wolf-vs-side { text-align: center; }
+    .wolf-vs-avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin: 0 auto 4px; }
+    .wolf-vs-avatar.human { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .wolf-vs-avatar.ai { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+    .wolf-vs-label { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+    .wolf-vs-score { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 900; }
+    .wolf-vs-score.human { color: #6366f1; }
+    .wolf-vs-score.ai { color: #ec4899; }
+    .wolf-vs-text { font-family: 'Orbitron', sans-serif; font-size: 14px; color: #333; }
+    .werewolf-rules { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; text-align: left; margin-bottom: 20px; }
+    .werewolf-rules-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+    .werewolf-rules-list { font-size: 13px; color: #aaa; line-height: 1.8; list-style: none; }
+    .werewolf-rules-list li::before { content: "• "; color: #a78bfa; }
+    .werewolf-diff { display: flex; gap: 8px; margin-bottom: 20px; }
+    .wolf-diff-btn { flex: 1; padding: 12px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); color: #888; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .wolf-diff-btn.selected { border-color: #8b5cf6; background: rgba(139,92,246,0.1); color: #a78bfa; }
+    .werewolf-section-label { font-size: 12px; color: #888; margin-bottom: 8px; text-align: left; }
+    .werewolf-count { display: flex; gap: 8px; margin-bottom: 8px; }
+    .wolf-count-btn { flex: 1; padding: 12px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); color: #888; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .wolf-count-btn.selected { border-color: #ec4899; background: rgba(236,72,153,0.1); color: #ec4899; }
+    .werewolf-role-preview { text-align: center; font-size: 14px; color: #aaa; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.02); border-radius: 8px; }
+    .werewolf-start-btn { width: 100%; background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; border: none; padding: 18px; border-radius: 14px; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 8px 24px rgba(139,92,246,0.3); }
+    
+    .wolf-game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 8px; }
+    .wolf-turn-badge { background: rgba(139,92,246,0.2); color: #a78bfa; padding: 8px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+    .wolf-player-role-badge { padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .wolf-player-role-badge.village { background: rgba(34,197,94,0.2); color: #22c55e; }
+    .wolf-player-role-badge.wolf { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .wolf-timer { background: rgba(236,72,153,0.2); color: #ec4899; padding: 8px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+    .wolf-timer.warning { animation: pulse 0.5s infinite; }
+    .wolf-topic-box { background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(236,72,153,0.1)); border: 1px solid rgba(139,92,246,0.3); border-radius: 16px; padding: 16px; text-align: center; margin-bottom: 16px; }
+    .wolf-topic-label { font-size: 11px; color: #888; margin-bottom: 8px; }
+    .wolf-topic-text { font-size: 18px; font-weight: 700; }
+    .wolf-chat-box { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; height: 320px; overflow-y: auto; padding: 16px; margin-bottom: 12px; }
+    .wolf-chat-msg { margin-bottom: 16px; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .wolf-chat-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .wolf-chat-avatar { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .wolf-chat-name { font-size: 13px; font-weight: 700; }
+    .wolf-chat-text { font-size: 14px; color: #ccc; line-height: 1.6; padding-left: 40px; }
+    .wolf-chat-msg.you .wolf-chat-avatar { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .wolf-chat-msg.you .wolf-chat-name { color: #818cf8; }
+    .wolf-chat-input-box { display: flex; gap: 8px; }
+    .wolf-chat-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; color: #fff; font-size: 14px; outline: none; }
+    .wolf-chat-input::placeholder { color: #555; }
+    .wolf-chat-input:focus { border-color: #8b5cf6; }
+    .wolf-send-btn { background: linear-gradient(135deg, #8b5cf6, #a78bfa); border: none; border-radius: 12px; padding: 14px 20px; color: #fff; font-weight: 700; cursor: pointer; }
+    .wolf-send-btn:disabled { background: rgba(255,255,255,0.1); color: #555; cursor: not-allowed; }
+    
+    .wolf-vote-title { text-align: center; font-size: 24px; font-weight: 900; margin-bottom: 8px; }
+    .wolf-vote-subtitle { text-align: center; font-size: 14px; color: #888; margin-bottom: 24px; }
+    .wolf-vote-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .wolf-vote-card { background: rgba(255,255,255,0.02); border: 2px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .wolf-vote-card:hover { border-color: rgba(139,92,246,0.3); }
+    .wolf-vote-card.selected { border-color: #ec4899; background: rgba(236,72,153,0.1); }
+    .wolf-vote-avatar { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .wolf-vote-info { flex: 1; }
+    .wolf-vote-name { font-size: 16px; font-weight: 700; }
+    .wolf-vote-desc { font-size: 12px; color: #888; }
+    .wolf-vote-check { width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .wolf-vote-card.selected .wolf-vote-check { background: #ec4899; border-color: #ec4899; }
+    .wolf-vote-card.selected .wolf-vote-check::after { content: "✓"; font-size: 14px; }
+    .wolf-vote-btn { width: 100%; background: linear-gradient(135deg, #ec4899, #f43f5e); color: #fff; border: none; padding: 18px; border-radius: 14px; font-size: 16px; font-weight: 900; cursor: pointer; }
+    .wolf-vote-btn:disabled { background: rgba(255,255,255,0.1); color: #555; cursor: not-allowed; }
+    
+    .wolf-result { text-align: center; padding: 24px 0; }
+    .wolf-result-icon { font-size: 64px; margin-bottom: 16px; }
+    .wolf-result-title { font-size: 32px; font-weight: 900; margin-bottom: 8px; }
+    .wolf-result-title.win { color: #22c55e; }
+    .wolf-result-title.lose { color: #ec4899; }
+    .wolf-result-subtitle { font-size: 14px; color: #888; margin-bottom: 20px; }
+    .wolf-result-bar { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+    .wolf-result-bar-title { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .wolf-result-bar-track { height: 24px; background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; display: flex; }
+    .wolf-result-bar-human { height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; transition: width 0.5s; }
+    .wolf-result-bar-ai { height: 100%; background: linear-gradient(90deg, #a855f7, #ec4899); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; transition: width 0.5s; }
+    .wolf-result-reveal { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+    .wolf-result-reveal-title { font-size: 12px; color: #888; margin-bottom: 16px; }
+    .wolf-result-cards { display: flex; flex-direction: column; gap: 8px; }
+    .wolf-result-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.02); }
+    .wolf-result-card.werewolf { background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.3); }
+    .wolf-result-card-avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .wolf-result-card-name { flex: 1; font-weight: 600; }
+    .wolf-result-card-role { font-size: 12px; padding: 4px 10px; border-radius: 8px; }
+    .wolf-result-card-role.villager { background: rgba(34,197,94,0.2); color: #22c55e; }
+    .wolf-result-card-role.werewolf { background: rgba(236,72,153,0.2); color: #ec4899; }
+    .wolf-result-btns { display: flex; gap: 12px; }
+    .wolf-result-btn { flex: 1; padding: 16px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; }
+    .wolf-result-btn.primary { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; }
+    .wolf-result-btn.secondary { background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); }
+    
+    /* Night Screen */
+    .wolf-night { text-align: center; padding: 40px 0; }
+    .wolf-night-icon { font-size: 80px; margin-bottom: 16px; animation: pulse 2s infinite; }
+    .wolf-night-title { font-size: 28px; font-weight: 900; color: #8b5cf6; margin-bottom: 8px; }
+    .wolf-night-subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .wolf-night-animation { margin: 24px 0; }
+    .wolf-night-eyes { font-size: 32px; animation: blink 3s infinite; }
+    @keyframes blink { 0%,90%,100%{opacity:1} 95%{opacity:0} }
+    .wolf-night-survivors { margin-top: 24px; }
+    .wolf-night-survivors-label { font-size: 12px; color: #666; margin-bottom: 8px; }
+    .wolf-night-survivors-list { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    .wolf-night-survivor { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .wolf-night-survivor.dead { opacity: 0.3; filter: grayscale(1); position: relative; }
+    .wolf-night-survivor.dead::after { content: '💀'; position: absolute; font-size: 14px; }
+    
+    /* Night Attack Screen (人狼用) */
+    .wolf-night-attack { padding: 20px 0; }
+    .wolf-night-attack-header { text-align: center; margin-bottom: 24px; }
+    .wolf-night-attack-icon { font-size: 64px; margin-bottom: 12px; animation: pulse 2s infinite; }
+    .wolf-night-attack-title { font-size: 24px; font-weight: 900; color: #ef4444; margin-bottom: 8px; }
+    .wolf-night-attack-subtitle { font-size: 14px; color: #888; }
+    .wolf-night-attack-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .wolf-attack-card { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 2px solid transparent; border-radius: 14px; padding: 14px; cursor: pointer; transition: all 0.2s; }
+    .wolf-attack-card:hover { background: rgba(239,68,68,0.1); }
+    .wolf-attack-card.selected { border-color: #ef4444; background: rgba(239,68,68,0.15); }
+    .wolf-attack-avatar { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .wolf-attack-info { flex: 1; }
+    .wolf-attack-name { font-size: 15px; font-weight: 700; }
+    .wolf-attack-desc { font-size: 12px; color: #888; }
+    .wolf-attack-check { width: 24px; height: 24px; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .wolf-attack-card.selected .wolf-attack-check { background: #ef4444; border-color: #ef4444; }
+    .wolf-attack-card.selected .wolf-attack-check::after { content: '✓'; color: white; font-size: 14px; }
+    .wolf-night-attack-btn { width: 100%; background: linear-gradient(135deg, #dc2626, #ef4444); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .wolf-night-attack-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    /* Morning Screen */
+    .wolf-morning { text-align: center; padding: 40px 0; }
+    .wolf-morning-icon { font-size: 80px; margin-bottom: 16px; }
+    .wolf-morning-title { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+    .wolf-morning-title.safe { color: #22c55e; }
+    .wolf-morning-title.danger { color: #ef4444; }
+    .wolf-morning-subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .wolf-morning-victim { margin: 24px 0; padding: 20px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 16px; }
+    .wolf-morning-victim.safe { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); }
+    .wolf-morning-victim-avatar { font-size: 48px; margin-bottom: 8px; }
+    .wolf-morning-victim-name { font-size: 18px; font-weight: 700; color: #ef4444; }
+    .wolf-morning-victim.safe .wolf-morning-victim-name { color: #22c55e; }
+    .wolf-morning-victim-text { font-size: 12px; color: #888; margin-top: 4px; }
+    .wolf-morning-btn { width: 100%; background: linear-gradient(135deg, #f97316, #fb923c); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 24px; }
+    
+    /* Execution Screen */
+    .wolf-execution { text-align: center; padding: 40px 0; }
+    .wolf-execution-icon { font-size: 64px; margin-bottom: 16px; }
+    .wolf-execution-title { font-size: 24px; font-weight: 900; margin-bottom: 24px; }
+    .wolf-execution-target { margin: 24px 0; }
+    .wolf-execution-target-avatar { font-size: 64px; margin-bottom: 8px; }
+    .wolf-execution-target-name { font-size: 20px; font-weight: 700; }
+    .wolf-execution-role { font-size: 18px; margin: 16px 0; padding: 12px 24px; border-radius: 20px; display: inline-block; }
+    .wolf-execution-role.wolf { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .wolf-execution-role.village { background: rgba(34,197,94,0.2); color: #22c55e; }
+    .wolf-execution-btn { width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 24px; }
+    
+    /* Survivors Bar */
+    .wolf-survivors-bar { display: flex; justify-content: center; gap: 8px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .wolf-survivor-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; position: relative; transition: all 0.3s; }
+    .wolf-survivor-icon.dead { opacity: 0.3; filter: grayscale(1); }
+    .wolf-survivor-icon.dead::after { content: '💀'; position: absolute; font-size: 12px; bottom: -2px; right: -2px; }
+    .wolf-survivor-icon.you-icon { background: linear-gradient(135deg, #6366f1, #8b5cf6); border: 2px solid #a78bfa; }
+    
+    /* Vote Layout */
+    .wolf-vote-header { text-align: center; margin-bottom: 16px; }
+    .wolf-vote-layout { display: flex; flex-direction: column; gap: 16px; height: calc(100vh - 200px); }
+    .wolf-vote-chat-section { flex: 1; min-height: 150px; max-height: 200px; }
+    .wolf-vote-chat-title { font-size: 12px; color: #888; margin-bottom: 8px; }
+    .wolf-vote-chat-box { height: calc(100% - 24px); overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; font-size: 12px; }
+    .wolf-vote-chat-box .wolf-chat-msg { margin-bottom: 8px; padding: 6px 10px; }
+    .wolf-vote-chat-box .wolf-chat-header { margin-bottom: 2px; }
+    .wolf-vote-chat-box .wolf-chat-avatar { width: 20px; height: 20px; font-size: 12px; }
+    .wolf-vote-chat-box .wolf-chat-name { font-size: 11px; }
+    .wolf-vote-chat-box .wolf-chat-text { font-size: 12px; }
+    .wolf-vote-select-section { flex-shrink: 0; }
+    
+    /* Role Reveal Screen */
+    .wolf-role-reveal { text-align: center; padding: 40px 0; }
+    .wolf-role-reveal-title { font-size: 16px; color: #888; margin-bottom: 24px; }
+    .wolf-role-reveal-icon { font-size: 80px; margin-bottom: 16px; animation: bounce 1s ease infinite; }
+    .wolf-role-reveal-name { font-size: 32px; font-weight: 900; margin-bottom: 8px; }
+    .wolf-role-reveal-name.village { color: #22c55e; }
+    .wolf-role-reveal-name.wolf { color: #ef4444; }
+    .wolf-role-reveal-team { font-size: 14px; padding: 6px 16px; border-radius: 20px; display: inline-block; margin-bottom: 16px; }
+    .wolf-role-reveal-team.village { background: rgba(34,197,94,0.2); color: #22c55e; }
+    .wolf-role-reveal-team.wolf { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .wolf-role-reveal-desc { font-size: 14px; color: #aaa; margin-bottom: 24px; }
+    .wolf-role-reveal-mission { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; margin-bottom: 24px; }
+    .wolf-mission-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .wolf-mission-text { font-size: 13px; color: #888; }
+    .wolf-role-reveal-allies { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 16px; padding: 16px; margin-bottom: 24px; }
+    .wolf-allies-title { font-size: 14px; font-weight: 700; color: #ef4444; margin-bottom: 12px; }
+    .wolf-allies-list { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .wolf-ally-card { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .wolf-ally-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .wolf-ally-name { font-size: 12px; color: #ef4444; }
+    .wolf-role-reveal-btn { width: 100%; background: linear-gradient(135deg, #f97316, #fb923c); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    
+    /* Vote Result Screen */
+    .wolf-vote-result { padding: 20px 0; }
+    .wolf-vote-result-title { text-align: center; font-size: 24px; font-weight: 900; margin-bottom: 20px; }
+    .wolf-vote-result-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .wolf-vote-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; animation: fadeIn 0.3s ease; }
+    .wolf-vote-item-voter { display: flex; align-items: center; gap: 8px; min-width: 100px; }
+    .wolf-vote-item-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .wolf-vote-item-name { font-size: 13px; font-weight: 600; }
+    .wolf-vote-item-arrow { color: #666; }
+    .wolf-vote-item-target { display: flex; align-items: center; gap: 8px; }
+    .wolf-vote-result-tally { margin-bottom: 20px; }
+    .wolf-tally-title { font-size: 14px; color: #888; margin-bottom: 12px; text-align: center; }
+    .wolf-tally-bars { display: flex; flex-direction: column; gap: 8px; }
+    .wolf-tally-row { display: flex; align-items: center; gap: 12px; }
+    .wolf-tally-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .wolf-tally-bar-container { flex: 1; height: 24px; background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; }
+    .wolf-tally-bar { height: 100%; background: linear-gradient(90deg, #8b5cf6, #a78bfa); display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; transition: width 0.5s ease; }
+    .wolf-tally-bar.max { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .wolf-tally-count { font-size: 12px; font-weight: 700; color: white; }
+    .wolf-vote-result-decision { text-align: center; padding: 16px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; margin-bottom: 20px; }
+    .wolf-vote-result-decision.tie { background: rgba(234,179,8,0.1); border-color: rgba(234,179,8,0.3); }
+    .wolf-vote-result-decision-text { font-size: 16px; font-weight: 700; }
+    .wolf-vote-result-btn { width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    
+    .char-takuya { background: linear-gradient(135deg, #f97316, #fb923c); }
+    .char-misaki { background: linear-gradient(135deg, #ec4899, #f472b6); }
+    .char-kenta { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+    .char-ayaka { background: linear-gradient(135deg, #a855f7, #c084fc); }
+    .char-ryota { background: linear-gradient(135deg, #22c55e, #4ade80); }
+    .char-yui { background: linear-gradient(135deg, #f43f5e, #fb7185); }
+    .char-sota { background: linear-gradient(135deg, #0ea5e9, #38bdf8); }
+    
+    /* ===== ANIMATIONS ===== */
+    @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+    .bounce { animation: bounce 0.5s ease; }
+    .shake { animation: shake 0.4s ease; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+      <div class="logo" onclick="goHome()">
+      <span class="logo-icon">🔍</span>
+      <span class="logo-text">
+        <span class="logo-fake">FAKE</span>
+        <span class="logo-searcher">SEARCHER</span>
+      </span>
+    </div>
+    </div>
+    <div class="header-stats">
+      人類 <span class="human" id="headerHuman">50%</span> vs <span class="ai-score" id="headerAI">50%</span> AI
+    </div>
+  </header>
+  
+  <!-- Nav Tabs -->
+  <nav class="nav-tabs" id="navTabs">
+    <div class="nav-tab active" data-screen="home" onclick="switchTab('home')">
+      <span class="icon">🎮</span> プレイ
+    </div>
+    <div class="nav-tab" data-screen="feed" onclick="switchTab('feed')">
+      <span class="icon">🌍</span> みんな
+    </div>
+    <div class="nav-tab" data-screen="create" onclick="switchTab('create')">
+      <span class="icon">✏️</span> 作る
+    </div>
+    <div class="nav-tab" data-screen="werewolf" onclick="switchTab('werewolf')">
+      <span class="icon">🐺</span> AI人狼
+    </div>
+  </nav>
+
+  <div class="container">
+    
+    <!-- ===== HOME SCREEN ===== -->
+    <div class="screen active" id="homeScreen">
+      <div class="hero">
+        <div class="hero-logo">
+          <span class="icon">🔍</span>
+          <span class="text">
+            <span class="fake">FAKE</span>
+            <span class="searcher">SEARCHER</span>
+          </span>
+        </div>
+        <p class="hero-tagline">AIのウソ、見抜けるか？</p>
+      </div>
+      
+      <div class="vs-mini">
+        <div class="vs-mini-side">
+          <div class="vs-mini-avatar human">👤</div>
+          <div class="vs-mini-label">Human</div>
+          <div class="vs-mini-score human" id="humanWins">0</div>
+        </div>
+        <div class="vs-mini-text">VS</div>
+        <div class="vs-mini-side">
+          <div class="vs-mini-avatar ai">🤖</div>
+          <div class="vs-mini-label">AI</div>
+          <div class="vs-mini-score ai" id="aiWins">0</div>
+        </div>
+      </div>
+      
+      <!-- Grade -->
+      <div class="section">
+        <div class="section-label"><span class="icon">🎓</span> 学年</div>
+        <div class="grade-selector">
+          <div class="grade-display">
+            <div class="grade-display-label" id="gradeLabel">中2</div>
+            <div class="grade-display-desc" id="gradeDesc">標準レベル</div>
+          </div>
+          <input type="range" class="grade-slider" id="gradeSlider" min="1" max="12" value="8" oninput="updateGrade(this.value)">
+          <div class="grade-labels">
+            <span>小1</span><span>小6</span><span>中3</span><span>高3</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Topic -->
+      <div class="section">
+        <div class="section-label"><span class="icon">📚</span> テーマ</div>
+        <div class="topic-grid">
+          <div class="topic-btn selected" data-topic="生き物" onclick="selectTopic(this)"><div class="topic-btn-icon">🐙</div><div class="topic-btn-text">生き物</div></div>
+          <div class="topic-btn" data-topic="偉人" onclick="selectTopic(this)"><div class="topic-btn-icon">👤</div><div class="topic-btn-text">偉人</div></div>
+          <div class="topic-btn" data-topic="宇宙" onclick="selectTopic(this)"><div class="topic-btn-icon">🚀</div><div class="topic-btn-text">宇宙</div></div>
+          <div class="topic-btn" data-topic="地理" onclick="selectTopic(this)"><div class="topic-btn-icon">🌍</div><div class="topic-btn-text">地理</div></div>
+          <div class="topic-btn" data-topic="古代文明" onclick="selectTopic(this)"><div class="topic-btn-icon">🏛️</div><div class="topic-btn-text">古代文明</div></div>
+          <div class="topic-btn" data-topic="人体" onclick="selectTopic(this)"><div class="topic-btn-icon">🧬</div><div class="topic-btn-text">人体</div></div>
+          <div class="topic-btn" data-topic="科学" onclick="selectTopic(this)"><div class="topic-btn-icon">⚗️</div><div class="topic-btn-text">科学</div></div>
+          <div class="topic-btn" data-topic="日本史" onclick="selectTopic(this)"><div class="topic-btn-icon">👑</div><div class="topic-btn-text">日本史</div></div>
+        </div>
+      </div>
+      
+      <!-- Keyword -->
+      <div class="section">
+        <div class="section-label"><span class="icon">🔍</span> またはキーワード入力</div>
+        <div class="keyword-box">
+          <input type="text" class="keyword-input" id="keywordInput" placeholder="例：織田信長、ピラミッド..." oninput="checkKeyword(this.value)">
+          <div class="keyword-suggestions">
+            <span class="keyword-tag" onclick="setKeyword('織田信長')">織田信長</span>
+            <span class="keyword-tag" onclick="setKeyword('ピラミッド')">ピラミッド</span>
+            <span class="keyword-tag" onclick="setKeyword('太陽系')">太陽系</span>
+            <span class="keyword-tag" onclick="setKeyword('恐竜')">恐竜</span>
+          </div>
+          <div class="ng-alert" id="ngAlert">
+            <div class="ng-alert-title">🚫「<span id="ngWord"></span>」は使えません</div>
+            <div class="ng-alert-message">学習に関係のあるテーマを選んでね！</div>
+            <div class="ng-suggestions" id="ngSuggestions"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Difficulty -->
+      <div class="section">
+        <div class="section-label"><span class="icon">🎯</span> 難易度</div>
+        <div class="difficulty-grid">
+          <div class="diff-btn easy selected" data-diff="easy" onclick="selectDiff(this)"><div class="diff-btn-icon">😊</div><div class="diff-btn-text">EASY</div></div>
+          <div class="diff-btn normal" data-diff="normal" onclick="selectDiff(this)"><div class="diff-btn-icon">🤔</div><div class="diff-btn-text">NORMAL</div></div>
+          <div class="diff-btn hard" data-diff="hard" onclick="selectDiff(this)"><div class="diff-btn-icon">😈</div><div class="diff-btn-text">HARD</div></div>
+          <div class="diff-btn nightmare" data-diff="nightmare" onclick="selectDiff(this)"><div class="diff-btn-icon">💀</div><div class="diff-btn-text">NIGHTMARE</div></div>
+        </div>
+      </div>
+      
+      <button class="start-btn" onclick="startAIQuiz()">🎯 START GAME</button>
+    </div>
+    
+    <!-- ===== LOADING SCREEN ===== -->
+    <div class="screen" id="loadingScreen">
+      <div class="loading">
+        <div class="loading-icon">🤖</div>
+        <div class="loading-text">GENERATING...</div>
+        <div class="loading-subtext">AIがFAKEを仕込んでいます</div>
+      </div>
+    </div>
+    
+    <!-- ===== QUIZ SCREEN ===== -->
+    <div class="screen" id="quizScreen">
+      <div class="quiz-header">
+        <span class="quiz-badge topic" id="quizTopicBadge">🐙 生き物</span>
+        <span class="quiz-badge difficulty" id="quizDiffBadge">NORMAL</span>
+      </div>
+      <div class="quiz-content">
+        <h2 class="quiz-title" id="quizTitle">読み込み中...</h2>
+        <div class="facts-list" id="factsList"></div>
+      </div>
+      <div class="quiz-question">
+        <div class="quiz-question-header">
+          <span class="quiz-question-icon">🎯</span>
+          <span class="quiz-question-text">FIND THE FAKE</span>
+        </div>
+        <div class="answer-grid" id="answerGrid"></div>
+      </div>
+      <button class="submit-answer-btn" id="submitAnswerBtn" onclick="submitAnswer()" disabled>THIS IS FAKE</button>
+    </div>
+    
+    <!-- ===== RESULT SCREEN ===== -->
+    <div class="screen" id="resultScreen">
+      <div class="result-screen">
+        <div class="result-icon" id="resultIcon">🎉</div>
+        <h1 class="result-title" id="resultTitle">RESULT</h1>
+        <p class="result-subtitle" id="resultSubtitle">...</p>
+        <div class="result-bar">
+          <div class="result-bar-title">GLOBAL SCORE</div>
+          <div class="result-bar-track">
+            <div class="result-bar-human" id="resultBarHuman" style="width:50%">50%</div>
+            <div class="result-bar-ai" id="resultBarAI" style="width:50%">50%</div>
+          </div>
+        </div>
+        <div class="result-explain" id="resultExplain"></div>
+        <div class="result-stats">
+          <div class="result-stat">
+            <div class="result-stat-value positive" id="resultWins">0</div>
+            <div class="result-stat-label">YOUR WINS</div>
+          </div>
+          <div class="result-stat">
+            <div class="result-stat-value" id="resultStreak">0</div>
+            <div class="result-stat-label">STREAK</div>
+          </div>
+        </div>
+        <div class="result-btns">
+          <button class="result-btn primary" onclick="playAgain()">PLAY AGAIN</button>
+          <button class="result-btn secondary" onclick="goHome()">BACK</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ===== FEED SCREEN ===== -->
+    <div class="screen" id="feedScreen">
+      <div class="feed-header">
+        <div class="feed-title">🌍 みんなのクイズ</div>
+        <div class="feed-filter">
+          <div class="filter-chip active" onclick="filterFeed('hot')">🔥 人気</div>
+          <div class="filter-chip" onclick="filterFeed('new')">🆕 新着</div>
+        </div>
+      </div>
+      <div id="feedList">
+        <!-- Quiz cards will be inserted here -->
+      </div>
+    </div>
+    
+    <!-- ===== HUMAN QUIZ SCREEN ===== -->
+    <div class="screen" id="humanQuizScreen">
+      <div class="quiz-header">
+        <span class="quiz-badge human-made" id="humanQuizAuthor">👤 タコ博士</span>
+        <span class="quiz-badge topic" id="humanQuizTrap">🎭 82%が騙された</span>
+      </div>
+      <div class="quiz-content">
+        <h2 class="quiz-title" id="humanQuizTitle">タイトル</h2>
+        <div class="facts-list" id="humanFactsList"></div>
+      </div>
+      <div class="quiz-question">
+        <div class="quiz-question-header">
+          <span class="quiz-question-icon">🎯</span>
+          <span class="quiz-question-text">FIND THE FAKE</span>
+        </div>
+        <div class="answer-grid" id="humanAnswerGrid"></div>
+      </div>
+      <button class="submit-answer-btn" id="humanSubmitBtn" onclick="submitHumanAnswer()" disabled>THIS IS FAKE</button>
+    </div>
+    
+    <!-- ===== CREATE SCREEN ===== -->
+    <div class="screen" id="createScreen">
+      <div class="create-header">
+        <div class="create-icon">😈</div>
+        <h1 class="create-title"><span class="highlight">FAKE</span>を仕込め！</h1>
+        <p class="create-subtitle">みんなを騙すクイズを作ろう</p>
+      </div>
+      
+      <div class="create-section">
+        <div class="create-section-header">
+          <div class="create-section-num">1</div>
+          <div class="create-section-title">タイトル</div>
+        </div>
+        <div class="create-input-box">
+          <input type="text" class="create-input" id="createTitle" placeholder="例：タコの驚くべき真実" maxlength="50" oninput="validateCreate()">
+        </div>
+      </div>
+      
+      <div class="create-section">
+        <div class="create-section-header">
+          <div class="create-section-num">2</div>
+          <div class="create-section-title">4つの事実（1つだけFAKE）</div>
+        </div>
+        <div class="fact-cards">
+          <div class="fact-card">
+            <div class="fact-card-num">1</div>
+            <div style="flex:1"><div class="fact-card-label">本当の事実</div><textarea class="fact-card-input" id="createFact1" placeholder="例：タコには心臓が3つある" rows="1" oninput="validateCreate()"></textarea></div>
+          </div>
+          <div class="fact-card">
+            <div class="fact-card-num">2</div>
+            <div style="flex:1"><div class="fact-card-label">本当の事実</div><textarea class="fact-card-input" id="createFact2" placeholder="例：タコの血は青い" rows="1" oninput="validateCreate()"></textarea></div>
+          </div>
+          <div class="fact-card">
+            <div class="fact-card-num">3</div>
+            <div style="flex:1"><div class="fact-card-label">本当の事実</div><textarea class="fact-card-input" id="createFact3" placeholder="例：タコは体の色を変えられる" rows="1" oninput="validateCreate()"></textarea></div>
+          </div>
+          <div class="fact-card fake">
+            <div class="fact-card-num">🎭</div>
+            <div style="flex:1"><div class="fact-card-label">ウソの事実 <span class="badge">FAKE</span></div><textarea class="fact-card-input" id="createFake" placeholder="例：タコは陸で30分呼吸できる" rows="1" oninput="validateCreate()"></textarea></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="create-section">
+        <div class="create-section-header">
+          <div class="create-section-num">3</div>
+          <div class="create-section-title">解説</div>
+        </div>
+        <div class="create-input-box">
+          <textarea class="create-input" id="createExplanation" placeholder="なぜそれがFAKEなのか説明..." rows="3" oninput="validateCreate()"></textarea>
+        </div>
+      </div>
+      
+      <div class="create-section">
+        <div class="create-section-header">
+          <div class="create-section-num">4</div>
+          <div class="create-section-title">対象学年</div>
+        </div>
+        <div class="grade-chips">
+          <div class="grade-chip" data-grade="elementary" onclick="selectTargetGrade(this)">小学生</div>
+          <div class="grade-chip selected" data-grade="middle" onclick="selectTargetGrade(this)">中学生</div>
+          <div class="grade-chip" data-grade="high" onclick="selectTargetGrade(this)">高校生</div>
+          <div class="grade-chip" data-grade="all" onclick="selectTargetGrade(this)">全年齢</div>
+        </div>
+      </div>
+      
+      <button class="create-submit-btn" id="createSubmitBtn" onclick="submitCreate()" disabled>🎭 クイズを投稿する</button>
+    </div>
+    
+    <!-- ===== WEREWOLF SCREEN ===== -->
+    <div class="screen" id="werewolfScreen">
+      <div class="werewolf-start">
+        <div class="werewolf-icon">🐺</div>
+        <h1 class="werewolf-title">AI <span class="highlight">人狼</span></h1>
+        <p class="werewolf-subtitle">AIに紛れた「人狼」を見抜け！</p>
+        <div class="werewolf-badge">🎮 ミニゲーム</div>
+        
+        <div class="wolf-vs-box">
+          <div class="wolf-vs-side">
+            <div class="wolf-vs-avatar human">👤</div>
+            <div class="wolf-vs-label">Human</div>
+            <div class="wolf-vs-score human" id="wolfHumanWins">0</div>
+          </div>
+          <div class="wolf-vs-text">VS</div>
+          <div class="wolf-vs-side">
+            <div class="wolf-vs-avatar ai">🐺</div>
+            <div class="wolf-vs-label">Werewolf</div>
+            <div class="wolf-vs-score ai" id="wolfAiWins">0</div>
+          </div>
+        </div>
+        
+        <div class="werewolf-rules">
+          <div class="werewolf-rules-title">📜 ルール</div>
+          <ul class="werewolf-rules-list">
+            <li>☀️ 昼：45秒の議論タイム</li>
+            <li>🗳️ 投票：1人を処刑</li>
+            <li>🌙 夜：人狼が1人を襲撃</li>
+            <li>🎯 人狼を全滅させれば勝利！</li>
+          </ul>
+        </div>
+        
+        <div class="werewolf-section-label">👥 人数</div>
+        <div class="werewolf-count">
+          <button class="wolf-count-btn selected" data-count="5" onclick="selectWolfCount(this)">5人</button>
+          <button class="wolf-count-btn" data-count="6" onclick="selectWolfCount(this)">6人</button>
+          <button class="wolf-count-btn" data-count="7" onclick="selectWolfCount(this)">7人</button>
+          <button class="wolf-count-btn" data-count="8" onclick="selectWolfCount(this)">8人</button>
+        </div>
+        <div class="werewolf-role-preview" id="rolePreview">🐺×1 🧑‍🌾×3</div>
+        
+        <div class="werewolf-section-label">⚙️ 難易度</div>
+        <div class="werewolf-diff">
+          <button class="wolf-diff-btn selected" data-diff="easy" onclick="selectWolfDiff(this)">EASY</button>
+          <button class="wolf-diff-btn" data-diff="normal" onclick="selectWolfDiff(this)">NORMAL</button>
+          <button class="wolf-diff-btn" data-diff="hard" onclick="selectWolfDiff(this)">HARD</button>
+        </div>
+        
+        <button class="werewolf-start-btn" onclick="startWerewolf()">🐺 ゲーム開始</button>
+      </div>
+    </div>
+    
+    <!-- ===== WEREWOLF ROLE REVEAL SCREEN ===== -->
+    <div class="screen" id="werewolfRoleScreen">
+      <div class="wolf-role-reveal">
+        <div class="wolf-role-reveal-title">あなたの役職は...</div>
+        <div class="wolf-role-reveal-icon" id="wolfPlayerRoleIcon">🧑‍🌾</div>
+        <div class="wolf-role-reveal-name" id="wolfPlayerRoleName">村人</div>
+        <div class="wolf-role-reveal-team" id="wolfPlayerTeam">村人陣営</div>
+        <div class="wolf-role-reveal-desc" id="wolfPlayerRoleDesc">人狼を見つけて処刑しよう！</div>
+        
+        <div class="wolf-role-reveal-mission" id="wolfPlayerMission">
+          <div class="wolf-mission-title">🎯 ミッション</div>
+          <div class="wolf-mission-text" id="wolfMissionText">議論で人狼を見抜き、投票で処刑せよ</div>
+        </div>
+        
+        <div class="wolf-role-reveal-allies" id="wolfAlliesSection" style="display:none;">
+          <div class="wolf-allies-title">🐺 仲間の人狼</div>
+          <div class="wolf-allies-list" id="wolfAlliesList"></div>
+        </div>
+        
+        <button class="wolf-role-reveal-btn" onclick="startDayDiscussion()">議論を始める</button>
+      </div>
+    </div>
+    
+    <!-- ===== WEREWOLF GAME SCREEN ===== -->
+    <div class="screen" id="werewolfGameScreen">
+      <div class="wolf-game-header">
+        <div class="wolf-turn-badge">☀️ <span id="wolfCurrentTurn">1日目</span></div>
+        <div class="wolf-player-role-badge" id="wolfPlayerBadge">🧑‍🌾 村人</div>
+        <div class="wolf-timer" id="wolfTimer">⏱️ <span id="wolfTimerCount">45</span>秒</div>
+      </div>
+      
+      <div class="wolf-survivors-bar" id="wolfSurvivorsBar"></div>
+      
+      <div class="wolf-topic-box">
+        <div class="wolf-topic-label">📢 お題</div>
+        <div class="wolf-topic-text" id="wolfTopicText">読み込み中...</div>
+      </div>
+      
+      <div class="wolf-chat-box" id="wolfChatBox"></div>
+      
+      <div class="wolf-chat-input-box">
+        <input type="text" class="wolf-chat-input" id="wolfChatInput" placeholder="メッセージを入力..." maxlength="100">
+        <button class="wolf-send-btn" id="wolfSendBtn" onclick="sendWolfMessage()">送信</button>
+      </div>
+    </div>
+    
+    <!-- ===== WEREWOLF NIGHT SCREEN (観戦用) ===== -->
+    <div class="screen" id="werewolfNightScreen">
+      <div class="wolf-night">
+        <div class="wolf-night-icon">🌙</div>
+        <h1 class="wolf-night-title">夜がきた...</h1>
+        <p class="wolf-night-subtitle" id="wolfNightText">人狼が誰かを襲撃中...</p>
+        <div class="wolf-night-animation">
+          <div class="wolf-night-eyes">👁️ 👁️</div>
+        </div>
+        <div class="wolf-night-survivors">
+          <div class="wolf-night-survivors-label">生存者</div>
+          <div class="wolf-night-survivors-list" id="wolfNightSurvivors"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ===== WEREWOLF NIGHT ATTACK SCREEN (人狼プレイヤー用) ===== -->
+    <div class="screen" id="werewolfNightAttackScreen">
+      <div class="wolf-night-attack">
+        <div class="wolf-night-attack-header">
+          <div class="wolf-night-attack-icon">🐺</div>
+          <h1 class="wolf-night-attack-title">襲撃タイム</h1>
+          <p class="wolf-night-attack-subtitle">誰を襲撃する？</p>
+        </div>
+        
+        <div class="wolf-night-attack-grid" id="wolfAttackGrid"></div>
+        
+        <button class="wolf-night-attack-btn" id="wolfAttackBtn" onclick="submitNightAttack()" disabled>この人を襲撃する</button>
+      </div>
+    </div>
+    
+    <!-- ===== WEREWOLF MORNING SCREEN ===== -->
+    <div class="screen" id="werewolfMorningScreen">
+      <div class="wolf-morning">
+        <div class="wolf-morning-icon" id="wolfMorningIcon">☀️</div>
+        <h1 class="wolf-morning-title" id="wolfMorningTitle">朝がきた</h1>
+        <p class="wolf-morning-subtitle" id="wolfMorningText">無事に朝を迎えた...</p>
+        <div class="wolf-morning-victim" id="wolfMorningVictim"></div>
+        <button class="wolf-morning-btn" onclick="startDayDiscussion()">議論を始める</button>
+      </div>
+    </div>
+    
+    <!-- ===== WEREWOLF VOTE SCREEN ===== -->
+    <div class="screen" id="werewolfVoteScreen">
+      <div class="wolf-vote-header">
+        <h2 class="wolf-vote-title">🗳️ 投票タイム</h2>
+        <p class="wolf-vote-subtitle">誰を処刑する？</p>
+      </div>
+      
+      <div class="wolf-vote-layout">
+        <div class="wolf-vote-chat-section">
+          <div class="wolf-vote-chat-title">💬 議論の振り返り</div>
+          <div class="wolf-vote-chat-box" id="wolfVoteChatBox"></div>
+        </div>
+        
+        <div class="wolf-vote-select-section">
+          <div class="wolf-vote-grid" id="wolfVoteGrid"></div>
+          <button class="wolf-vote-btn" id="wolfVoteBtn" onclick="submitWolfVote()" disabled>投票する</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ===== WEREWOLF VOTE RESULT SCREEN ===== -->
+    <div class="screen" id="werewolfVoteResultScreen">
+      <div class="wolf-vote-result">
+        <h2 class="wolf-vote-result-title">🗳️ 投票結果</h2>
+        <div class="wolf-vote-result-list" id="wolfVoteResultList"></div>
+        <div class="wolf-vote-result-tally" id="wolfVoteResultTally"></div>
+        <div class="wolf-vote-result-decision" id="wolfVoteResultDecision"></div>
+        <button class="wolf-vote-result-btn" onclick="showExecutionResult()">結果を見る</button>
+      </div>
+    </div>
+    
+    <!-- ===== WEREWOLF EXECUTION SCREEN ===== -->
+    <div class="screen" id="werewolfExecutionScreen">
+      <div class="wolf-execution">
+        <div class="wolf-execution-icon" id="wolfExecutionIcon">⚖️</div>
+        <h1 class="wolf-execution-title" id="wolfExecutionTitle">処刑結果</h1>
+        <div class="wolf-execution-target" id="wolfExecutionTarget"></div>
+        <p class="wolf-execution-role" id="wolfExecutionRole"></p>
+        <button class="wolf-execution-btn" id="wolfExecutionBtn" onclick="afterExecution()">次へ</button>
+      </div>
+    </div>
+    
+    <!-- ===== WEREWOLF RESULT SCREEN ===== -->
+    <div class="screen" id="werewolfResultScreen">
+      <div class="wolf-result">
+        <div class="wolf-result-icon" id="wolfResultIcon">🎉</div>
+        <h1 class="wolf-result-title" id="wolfResultTitle">結果</h1>
+        <p class="wolf-result-subtitle" id="wolfResultSubtitle">...</p>
+        
+        <div class="wolf-result-bar">
+          <div class="wolf-result-bar-title">SCORE</div>
+          <div class="wolf-result-bar-track">
+            <div class="wolf-result-bar-human" id="wolfResultBarHuman" style="width:50%">50%</div>
+            <div class="wolf-result-bar-ai" id="wolfResultBarAi" style="width:50%">50%</div>
+          </div>
+        </div>
+        
+        <div class="wolf-result-reveal">
+          <div class="wolf-result-reveal-title">👥 正体公開</div>
+          <div class="wolf-result-cards" id="wolfResultCards"></div>
+        </div>
+        <div class="wolf-result-btns">
+          <button class="wolf-result-btn primary" onclick="restartWerewolf()">もう一度</button>
+          <button class="wolf-result-btn secondary" onclick="switchTab('werewolf')">戻る</button>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <script>
+    // ===== STATE =====
+    let state = {
+      grade: 8,
+      topic: '生き物',
+      difficulty: 'easy',
+      keyword: '',
+      humanWins: 0,
+      aiWins: 0,
+      streak: 0,
+      currentQuiz: null,
+      selectedAnswer: null,
+      isHumanQuiz: false,
+      currentHumanQuiz: null,
+      targetGrade: 'middle'
+    };
+    
+    const gradeInfo = {
+      1:{label:'小1',desc:'やさしく楽しく'},2:{label:'小2',desc:'やさしく楽しく'},
+      3:{label:'小3',desc:'理科社会スタート'},4:{label:'小4',desc:'理科社会スタート'},
+      5:{label:'小5',desc:'中学準備'},6:{label:'小6',desc:'中学準備'},
+      7:{label:'中1',desc:'基礎から'},8:{label:'中2',desc:'標準レベル'},9:{label:'中3',desc:'受験対策'},
+      10:{label:'高1',desc:'高校基礎'},11:{label:'高2',desc:'大学受験準備'},12:{label:'高3',desc:'大学受験'}
+    };
+    
+    const ngWords = {
+      'ポケモン':['生き物の進化','動物の生態','絶滅危惧種'],
+      'マイクラ':['建築の歴史','世界遺産','古代建造物'],
+      'フォートナイト':['戦国時代','城の構造','世界の戦争'],
+      'youtube':['科学実験','歴史ドキュメンタリー','宇宙'],
+      'tiktok':['物理の法則','化学反応','自然現象'],
+      'ゲーム':['コンピュータの歴史','プログラミング','電子工学'],
+      'アニメ':['日本文化','映像技術','アニメーションの仕組み']
+    };
+    
+    const sampleQuizzes = [
+      {id:1,author:'タコ博士',avatar:'🐙',grade:'中2',title:'深海生物の驚きの生態',preview:'深海には光る生き物がたくさん...',trapRate:82,plays:1234,likes:89},
+      {id:2,author:'歴史マスター',avatar:'👑',grade:'中3',title:'織田信長の意外な一面',preview:'戦国武将として有名な信長だが...',trapRate:76,plays:987,likes:72},
+      {id:3,author:'宇宙少年',avatar:'🚀',grade:'中1',title:'太陽系の不思議',preview:'私たちが住む太陽系には...',trapRate:68,plays:2341,likes:156},
+      {id:4,author:'科学ガール',avatar:'⚗️',grade:'高1',title:'元素の面白い性質',preview:'周期表に並ぶ元素たちには...',trapRate:91,plays:543,likes:67},
+      {id:5,author:'地理探検家',avatar:'🌍',grade:'小6',title:'世界の変な国境線',preview:'世界地図をよく見ると...',trapRate:74,plays:876,likes:45}
+    ];
+    
+    // ===== NAVIGATION =====
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.getElementById('backBtn').classList.toggle('show', !['homeScreen','feedScreen','createScreen','werewolfScreen'].includes(id));
+      document.getElementById('navTabs').style.display = ['homeScreen','feedScreen','createScreen','werewolfScreen'].includes(id) ? 'flex' : 'none';
+    }
+    
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-screen="${tab}"]`).classList.add('active');
+      if(tab === 'home') showScreen('homeScreen');
+      else if(tab === 'feed') { renderFeed(); showScreen('feedScreen'); }
+      else if(tab === 'create') showScreen('createScreen');
+      else if(tab === 'werewolf') showScreen('werewolfScreen');
+    }
+    
+    function goHome() { switchTab('home'); }
+    function goBack() { goHome(); }
+    
+    // ===== HOME FUNCTIONS =====
+    function updateGrade(v) {
+      state.grade = parseInt(v);
+      document.getElementById('gradeLabel').textContent = gradeInfo[state.grade].label;
+      document.getElementById('gradeDesc').textContent = gradeInfo[state.grade].desc;
+    }
+    
+    function selectTopic(el) {
+      document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      state.topic = el.dataset.topic;
+      document.getElementById('keywordInput').value = '';
+      state.keyword = '';
+      hideNgAlert();
+    }
+    
+    function selectDiff(el) {
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      state.difficulty = el.dataset.diff;
+    }
+    
+    function setKeyword(kw) {
+      document.getElementById('keywordInput').value = kw;
+      state.keyword = kw;
+      document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+      hideNgAlert();
+    }
+    
+    function checkKeyword(v) {
+      state.keyword = v;
+      const lower = v.toLowerCase();
+      for(const [ng, sug] of Object.entries(ngWords)) {
+        if(lower.includes(ng.toLowerCase())) { showNgAlert(ng, sug); return; }
+      }
+      hideNgAlert();
+      if(v.length > 0) document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('selected'));
+    }
+    
+    function showNgAlert(word, suggestions) {
+      document.getElementById('ngWord').textContent = word;
+      document.getElementById('ngSuggestions').innerHTML = suggestions.map(s => `<span class="ng-suggestion" onclick="setKeyword('${s}')">${s}</span>`).join('');
+      document.getElementById('ngAlert').classList.add('show');
+    }
+    
+    function hideNgAlert() { document.getElementById('ngAlert').classList.remove('show'); }
+    
+    // ===== AI QUIZ =====
+    async function startAIQuiz() {
+      const topic = state.keyword || state.topic;
+      for(const ng of Object.keys(ngWords)) {
+        if(topic.toLowerCase().includes(ng.toLowerCase())) { showNgAlert(ng, ngWords[ng]); return; }
+      }
+      
+      state.isHumanQuiz = false;
+      state.selectedAnswer = null;
+      showScreen('loadingScreen');
+      
+      try {
+        state.currentQuiz = await generateQuiz(topic, state.difficulty, state.grade);
+        renderQuiz();
+        showScreen('quizScreen');
+      } catch(e) {
+        console.error(e);
+        alert('クイズ生成に失敗しました');
+        goHome();
+      }
+    }
+    
+    async function generateQuiz(topic, diff, grade) {
+      const gradeLabel = gradeInfo[grade].label;
+      const diffPrompts = {
+        easy:'ウソは明らかに間違っているもの',
+        normal:'ウソはやや紛らわしいもの',
+        hard:'ウソは非常に紛らわしく本当っぽいもの',
+        nightmare:'ウソは極めて巧妙で専門家でも迷うもの'
+      };
+      
+      const prompt = `あなたは「FAKE or FACT」クイズゲームのAIです。${gradeLabel}向けのクイズを作成してください。
+
+トピック: ${topic}
+難易度: ${diff}
+学年: ${gradeLabel}
+
+以下の形式でJSONを生成：
+{"title":"クイズタイトル","facts":[{"text":"事実1","isLie":false},{"text":"事実2","isLie":false},{"text":"事実3","isLie":false},{"text":"ウソ","isLie":true}],"explanation":"解説"}
+
+ルール:
+1. 4つの事実のうち1つだけFAKE
+2. ${diffPrompts[diff]}
+3. ${gradeLabel}が理解できる内容
+4. 「へぇ〜！」と思える内容
+5. 有効なJSONのみ出力`;
+
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+      });
+      const data = await res.json();
+      const match = data.content[0].text.match(/\{[\s\S]*\}/);
+      if(!match) throw new Error('Invalid response');
+      const quiz = JSON.parse(match[0]);
+      quiz.facts = quiz.facts.sort(() => Math.random() - 0.5);
+      return quiz;
+    }
+    
+    function renderQuiz() {
+      const q = state.currentQuiz;
+      document.getElementById('quizTopicBadge').textContent = state.keyword || state.topic;
+      document.getElementById('quizDiffBadge').textContent = state.difficulty.toUpperCase();
+      document.getElementById('quizTitle').textContent = q.title;
+      
+      document.getElementById('factsList').innerHTML = q.facts.map((f,i) => `
+        <div class="fact-item"><div class="fact-num">${i+1}</div><div class="fact-text">${f.text}</div></div>
+      `).join('');
+      
+      const letters = ['A','B','C','D'];
+      document.getElementById('answerGrid').innerHTML = q.facts.map((f,i) => `
+        <button class="answer-btn" data-index="${i}" onclick="selectAnswer(this)">
+          <span class="answer-letter">${letters[i]}</span>
+          <span class="answer-text">${f.text}</span>
+        </button>
+      `).join('');
+      
+      document.getElementById('submitAnswerBtn').disabled = true;
+    }
+    
+    function selectAnswer(el) {
+      document.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      state.selectedAnswer = parseInt(el.dataset.index);
+      document.getElementById('submitAnswerBtn').disabled = false;
+    }
+    
+    function submitAnswer() {
+      if(state.selectedAnswer === null) return;
+      
+      const q = state.currentQuiz;
+      const correct = q.facts[state.selectedAnswer].isLie;
+      const correctIdx = q.facts.findIndex(f => f.isLie);
+      const letters = ['A','B','C','D'];
+      
+      document.querySelectorAll('.answer-btn').forEach(b => {
+        b.classList.add('disabled');
+        const idx = parseInt(b.dataset.index);
+        if(q.facts[idx].isLie) b.classList.add('correct');
+        else if(idx === state.selectedAnswer && !correct) b.classList.add('wrong');
+      });
+      
+      if(correct) { state.humanWins++; state.streak++; }
+      else { state.aiWins++; state.streak = 0; }
+      
+      updateStats();
+      setTimeout(() => showResult(correct, correctIdx, letters), 1200);
+    }
+    
+    function updateStats() {
+      const total = state.humanWins + state.aiWins;
+      const humanPct = total > 0 ? Math.round((state.humanWins / total) * 100) : 50;
+      const aiPct = 100 - humanPct;
+      document.getElementById('headerHuman').textContent = humanPct + '%';
+      document.getElementById('headerAI').textContent = aiPct + '%';
+      document.getElementById('humanWins').textContent = state.humanWins;
+      document.getElementById('aiWins').textContent = state.aiWins;
+    }
+    
+    function showResult(correct, correctIdx, letters) {
+      const q = state.currentQuiz;
+      const icon = document.getElementById('resultIcon');
+      const title = document.getElementById('resultTitle');
+      const subtitle = document.getElementById('resultSubtitle');
+      
+      if(correct) {
+        icon.textContent = '🎉'; icon.classList.add('bounce');
+        title.textContent = 'YOU WIN!'; title.className = 'result-title win';
+        subtitle.textContent = 'AIのFAKEを見抜いた！';
+      } else {
+        icon.textContent = '🤖'; icon.classList.add('shake');
+        title.textContent = 'AI WINS'; title.className = 'result-title lose';
+        subtitle.textContent = 'FAKEに騙された...';
+      }
+      
+      document.getElementById('resultExplain').innerHTML = `
+        <div class="result-explain-label">THE FAKE WAS...</div>
+        <div class="result-explain-answer">${letters[correctIdx]}. ${q.facts[correctIdx].text}</div>
+        <div class="result-explain-text">${q.explanation}</div>
+      `;
+      
+      const total = state.humanWins + state.aiWins;
+      const humanPct = total > 0 ? Math.round((state.humanWins / total) * 100) : 50;
+      const aiPct = 100 - humanPct;
+      document.getElementById('resultBarHuman').style.width = humanPct + '%';
+      document.getElementById('resultBarHuman').textContent = humanPct + '%';
+      document.getElementById('resultBarAI').style.width = aiPct + '%';
+      document.getElementById('resultBarAI').textContent = aiPct + '%';
+      
+      document.getElementById('resultWins').textContent = state.humanWins;
+      document.getElementById('resultStreak').textContent = state.streak;
+      document.getElementById('resultStreak').className = state.streak > 0 ? 'result-stat-value positive' : 'result-stat-value';
+      
+      showScreen('resultScreen');
+      setTimeout(() => icon.classList.remove('bounce','shake'), 500);
+    }
+    
+    function playAgain() {
+      if(state.isHumanQuiz) { renderFeed(); showScreen('feedScreen'); }
+      else startAIQuiz();
+    }
+    
+    // ===== FEED =====
+    function renderFeed() {
+      document.getElementById('feedList').innerHTML = sampleQuizzes.map(q => `
+        <div class="quiz-card" onclick="playHumanQuiz(${q.id})">
+          <div class="quiz-card-header">
+            <div class="quiz-card-author">
+              <div class="quiz-card-avatar">${q.avatar}</div>
+              <div><div class="quiz-card-author-name">${q.author}</div><div class="quiz-card-author-grade">${q.grade}</div></div>
+            </div>
+            <div class="quiz-card-trap">🎭 ${q.trapRate}%が騙された</div>
+          </div>
+          <div class="quiz-card-title">${q.title}</div>
+          <div class="quiz-card-preview">${q.preview}</div>
+          <div class="quiz-card-footer">
+            <div class="quiz-card-stat">👁️ ${q.plays}</div>
+            <div class="quiz-card-stat">❤️ ${q.likes}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function filterFeed(type) {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      // Would filter/sort here
+    }
+    
+    function playHumanQuiz(id) {
+      const quiz = sampleQuizzes.find(q => q.id === id);
+      state.isHumanQuiz = true;
+      state.currentHumanQuiz = {
+        ...quiz,
+        facts: [
+          {text: '深海魚の80%は自ら光を発することができる', isLie: false},
+          {text: 'ダイオウイカの目は直径30センチもある', isLie: false},
+          {text: '深海では水圧で魚の体が縮むため小型の種が多い', isLie: true},
+          {text: 'チョウチンアンコウは頭の発光器でエサをおびき寄せる', isLie: false}
+        ].sort(() => Math.random() - 0.5),
+        explanation: '実際には深海魚は水圧に適応した体を持っており、むしろ大型の種も多く存在します。ダイオウイカやリュウグウノツカイなど、深海には巨大な生物が生息しています。'
+      };
+      state.selectedAnswer = null;
+      
+      document.getElementById('humanQuizAuthor').textContent = `👤 ${quiz.author}`;
+      document.getElementById('humanQuizTrap').textContent = `🎭 ${quiz.trapRate}%が騙された`;
+      document.getElementById('humanQuizTitle').textContent = quiz.title;
+      
+      const facts = state.currentHumanQuiz.facts;
+      document.getElementById('humanFactsList').innerHTML = facts.map((f,i) => `
+        <div class="fact-item"><div class="fact-num">${i+1}</div><div class="fact-text">${f.text}</div></div>
+      `).join('');
+      
+      const letters = ['A','B','C','D'];
+      document.getElementById('humanAnswerGrid').innerHTML = facts.map((f,i) => `
+        <button class="answer-btn" data-index="${i}" onclick="selectHumanAnswer(this)">
+          <span class="answer-letter">${letters[i]}</span>
+          <span class="answer-text">${f.text}</span>
+        </button>
+      `).join('');
+      
+      document.getElementById('humanSubmitBtn').disabled = true;
+      showScreen('humanQuizScreen');
+    }
+    
+    function selectHumanAnswer(el) {
+      document.querySelectorAll('#humanAnswerGrid .answer-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      state.selectedAnswer = parseInt(el.dataset.index);
+      document.getElementById('humanSubmitBtn').disabled = false;
+    }
+    
+    function submitHumanAnswer() {
+      if(state.selectedAnswer === null) return;
+      
+      const q = state.currentHumanQuiz;
+      const correct = q.facts[state.selectedAnswer].isLie;
+      const correctIdx = q.facts.findIndex(f => f.isLie);
+      const letters = ['A','B','C','D'];
+      
+      document.querySelectorAll('#humanAnswerGrid .answer-btn').forEach(b => {
+        b.classList.add('disabled');
+        const idx = parseInt(b.dataset.index);
+        if(q.facts[idx].isLie) b.classList.add('correct');
+        else if(idx === state.selectedAnswer && !correct) b.classList.add('wrong');
+      });
+      
+      if(correct) { state.humanWins++; state.streak++; }
+      else { state.streak = 0; }
+      
+      updateStats();
+      
+      setTimeout(() => {
+        state.currentQuiz = { facts: q.facts, explanation: q.explanation };
+        showResult(correct, correctIdx, letters);
+      }, 1200);
+    }
+    
+    // ===== CREATE =====
+    function selectTargetGrade(el) {
+      document.querySelectorAll('.grade-chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      state.targetGrade = el.dataset.grade;
+    }
+    
+    function validateCreate() {
+      const title = document.getElementById('createTitle').value.trim();
+      const f1 = document.getElementById('createFact1').value.trim();
+      const f2 = document.getElementById('createFact2').value.trim();
+      const f3 = document.getElementById('createFact3').value.trim();
+      const fake = document.getElementById('createFake').value.trim();
+      const exp = document.getElementById('createExplanation').value.trim();
+      
+      const valid = title.length >= 5 && f1.length >= 10 && f2.length >= 10 && f3.length >= 10 && fake.length >= 10 && exp.length >= 20;
+      document.getElementById('createSubmitBtn').disabled = !valid;
+    }
+    
+    function submitCreate() {
+      const quiz = {
+        title: document.getElementById('createTitle').value.trim(),
+        facts: [
+          {text: document.getElementById('createFact1').value.trim(), isLie: false},
+          {text: document.getElementById('createFact2').value.trim(), isLie: false},
+          {text: document.getElementById('createFact3').value.trim(), isLie: false},
+          {text: document.getElementById('createFake').value.trim(), isLie: true}
+        ],
+        explanation: document.getElementById('createExplanation').value.trim(),
+        targetGrade: state.targetGrade
+      };
+      
+      console.log('Created quiz:', quiz);
+      alert('🎉 クイズを投稿しました！\n誰かが挑戦したら通知でお知らせします。');
+      
+      // Reset form
+      document.getElementById('createTitle').value = '';
+      document.getElementById('createFact1').value = '';
+      document.getElementById('createFact2').value = '';
+      document.getElementById('createFact3').value = '';
+      document.getElementById('createFake').value = '';
+      document.getElementById('createExplanation').value = '';
+      validateCreate();
+      
+      switchTab('feed');
+    }
+    
+    // ===== WEREWOLF GAME ENGINE =====
+    // TypeScriptから変換したゲームエンジン
+    
+    // キャラクター定義
+    const wolfCharacters = [
+      { id: 'takuya', name: 'たくや', avatar: '😎', color: 'char-takuya', grade: '中2', personality: '元気', tone: 'だぜ、だろ、じゃん' },
+      { id: 'misaki', name: 'みさき', avatar: '😊', color: 'char-misaki', grade: '中1', personality: 'おとなしい', tone: 'かな、だよね、...' },
+      { id: 'kenta', name: 'けんた', avatar: '😤', color: 'char-kenta', grade: '中3', personality: 'クール', tone: 'だな、だろ、別に' },
+      { id: 'ayaka', name: 'あやか', avatar: '💖', color: 'char-ayaka', grade: '中2', personality: 'ギャル', tone: 'まじ、やばい、てか' },
+      { id: 'ryota', name: 'りょうた', avatar: '🤓', color: 'char-ryota', grade: '中2', personality: 'オタク', tone: 'なんだよね、〜だと思う' },
+      { id: 'yui', name: 'ゆい', avatar: '🎀', color: 'char-yui', grade: '中1', personality: '優等生', tone: 'ですよね、〜かもしれません' },
+      { id: 'sota', name: 'そうた', avatar: '⚽', color: 'char-sota', grade: '中3', personality: 'スポーツ系', tone: 'っしょ、だわ、まじで' }
+    ];
+    
+    // 役職定義
+    const wolfRoles = {
+      villager: { id: 'villager', name: '村人', icon: '🧑‍🌾', team: 'village', canActAtNight: false },
+      werewolf: { id: 'werewolf', name: '人狼', icon: '🐺', team: 'wolf', canActAtNight: true },
+      seer: { id: 'seer', name: '占い師', icon: '🔮', team: 'village', canActAtNight: true },
+      bodyguard: { id: 'bodyguard', name: '騎士', icon: '🛡️', team: 'village', canActAtNight: true }
+    };
+    
+    // 人数別の役職配分
+    const wolfConfigs = {
+      5: { players: 4, werewolves: 1, seer: 0, bodyguard: 0 },
+      6: { players: 5, werewolves: 1, seer: 1, bodyguard: 0 },
+      7: { players: 6, werewolves: 2, seer: 1, bodyguard: 0 },
+      8: { players: 7, werewolves: 2, seer: 1, bodyguard: 1 }
+    };
+    
+    // 議論のお題（人狼らしい内容に）
+    const wolfTopics = [
+      '昨日の夜、何してた？',
+      '誰が一番怪しいと思う？',
+      'もし自分が人狼だったらどうする？',
+      '信用できる人は誰？',
+      '人狼っぽい発言した人いた？',
+      '自分が村人だって証明できる？',
+      '誰を守りたい？',
+      '直感で怪しいのは？'
+    ];
+    
+    // ゲーム状態管理
+    let wolfGame = {
+      // 設定
+      difficulty: 'easy',
+      playerCount: 5,
+      
+      // ゲーム状態
+      phase: 'setup', // setup, night, day, vote, result, gameover
+      dayCount: 1,
+      
+      // プレイヤー管理
+      players: [], // { char, role, isAlive }
+      
+      // 夜のアクション
+      nightActions: {
+        killTarget: null,      // 人狼の襲撃対象
+        guardTarget: null,     // 騎士の護衛対象
+        divineTarget: null,    // 占い師の占い対象
+        divineResult: null     // 占い結果
+      },
+      
+      // 投票
+      votes: {},
+      selectedVote: null,
+      selectedAttack: null,  // 人狼プレイヤーの襲撃選択
+      
+      // タイマー
+      timeLeft: 20,
+      timer: null,
+      
+      // 議論
+      currentTopic: '',
+      usedTopics: [],
+      turn: 1,
+      maxTurns: 1,  // 1ターンのみ
+      
+      // スコア
+      humanWins: 0,
+      aiWins: 0,
+      
+      // 結果
+      lastKilled: null,
+      lastExecuted: null,
+      winResult: null, // 'village', 'wolf', null
+      
+      // プレイヤー（あなた）の情報
+      playerRole: null,  // プレイヤーの役職
+      playerTeam: null   // プレイヤーの陣営
+    };
+    
+    // ============================================================
+    // ゲーム初期化
+    // ============================================================
+    
+    function initWolfGame() {
+      const config = wolfConfigs[wolfGame.playerCount];
+      const numPlayers = config.players;
+      
+      // キャラクターをシャッフルして選択
+      const shuffled = [...wolfCharacters].sort(() => Math.random() - 0.5);
+      const selectedChars = shuffled.slice(0, numPlayers);
+      
+      // 役職を作成（プレイヤー分も含めて+1）
+      let roles = [];
+      for (let i = 0; i < config.werewolves; i++) roles.push('werewolf');
+      for (let i = 0; i < config.seer; i++) roles.push('seer');
+      for (let i = 0; i < config.bodyguard; i++) roles.push('bodyguard');
+      while (roles.length < numPlayers + 1) roles.push('villager'); // +1 for player
+      
+      // 役職をシャッフル
+      roles = roles.sort(() => Math.random() - 0.5);
+      
+      // プレイヤー（あなた）の役職を決定
+      wolfGame.playerRole = roles.pop();
+      wolfGame.playerTeam = wolfRoles[wolfGame.playerRole].team;
+      
+      // AIプレイヤーを作成
+      wolfGame.players = selectedChars.map((char, i) => ({
+        char: char,
+        role: roles[i],
+        isAlive: true,
+        isPlayer: false
+      }));
+      
+      // 状態をリセット
+      wolfGame.phase = 'night';
+      wolfGame.dayCount = 1;
+      wolfGame.turn = 1;
+      wolfGame.usedTopics = [];
+      wolfGame.nightActions = { killTarget: null, guardTarget: null, divineTarget: null, divineResult: null };
+      wolfGame.votes = {};
+      wolfGame.selectedVote = null;
+      wolfGame.lastKilled = null;
+      wolfGame.lastExecuted = null;
+      wolfGame.winResult = null;
+      
+      console.log('🐺 ゲーム初期化完了');
+      console.log('あなたの役職:', wolfRoles[wolfGame.playerRole].name);
+      console.log('AIプレイヤー:', wolfGame.players.map(p => `${p.char.name}(${wolfRoles[p.role].name})`));
+    }
+    
+    // ============================================================
+    // フェーズ管理
+    // ============================================================
+    
+    function getAlivePlayers() {
+      return wolfGame.players.filter(p => p.isAlive);
+    }
+    
+    function getAlivePlayersByRole(roleId) {
+      return wolfGame.players.filter(p => p.isAlive && p.role === roleId);
+    }
+    
+    function getAlivePlayersByTeam(team) {
+      return wolfGame.players.filter(p => p.isAlive && wolfRoles[p.role].team === team);
+    }
+    
+    // 勝利判定
+    function checkWinCondition() {
+      const aliveWolves = getAlivePlayersByTeam('wolf');
+      const aliveVillagers = getAlivePlayersByTeam('village');
+      
+      // 人狼全滅 → 村人勝利
+      if (aliveWolves.length === 0) {
+        wolfGame.winResult = 'village';
+        return true;
+      }
+      
+      // 人狼 >= 村人 → 人狼勝利
+      if (aliveWolves.length >= aliveVillagers.length) {
+        wolfGame.winResult = 'wolf';
+        return true;
+      }
+      
+      return false;
+    }
+    
+    // ============================================================
+    // 夜フェーズの処理
+    // ============================================================
+    
+    function processNightActions() {
+      console.log('🌙 夜のアクションを処理中...');
+      
+      const actions = wolfGame.nightActions;
+      wolfGame.lastKilled = null;
+      
+      // 1. 占い処理
+      if (actions.divineTarget) {
+        const target = wolfGame.players.find(p => p.char.id === actions.divineTarget);
+        if (target) {
+          actions.divineResult = wolfRoles[target.role].team === 'wolf';
+          console.log(`🔮 占い結果: ${target.char.name}は${actions.divineResult ? '人狼' : '人間'}`);
+        }
+      }
+      
+      // 2. 襲撃処理（護衛と衝突判定）
+      if (actions.killTarget) {
+        const target = wolfGame.players.find(p => p.char.id === actions.killTarget);
+        if (target && target.isAlive) {
+          // 護衛されていれば無効
+          if (actions.guardTarget === actions.killTarget) {
+            console.log(`🛡️ ${target.char.name}は護衛によって守られた！`);
+          } else {
+            target.isAlive = false;
+            wolfGame.lastKilled = target;
+            console.log(`💀 ${target.char.name}は人狼に襲撃されて死亡した`);
+          }
+        }
+      }
+      
+      // アクションをリセット
+      wolfGame.nightActions = { killTarget: null, guardTarget: null, divineTarget: null, divineResult: null };
+    }
+    
+    // AIによる夜のアクション決定
+    function aiDecideNightActions() {
+      const alive = getAlivePlayers();
+      
+      // 人狼の襲撃先決定
+      const wolves = getAlivePlayersByRole('werewolf');
+      if (wolves.length > 0) {
+        const villagers = alive.filter(p => wolfRoles[p.role].team === 'village');
+        if (villagers.length > 0) {
+          const target = villagers[Math.floor(Math.random() * villagers.length)];
+          wolfGame.nightActions.killTarget = target.char.id;
+          console.log(`🐺 人狼が${target.char.name}を襲撃対象に選んだ`);
+        }
+      }
+      
+      // 占い師の占い先決定
+      const seers = getAlivePlayersByRole('seer');
+      if (seers.length > 0) {
+        const others = alive.filter(p => p.role !== 'seer');
+        if (others.length > 0) {
+          const target = others[Math.floor(Math.random() * others.length)];
+          wolfGame.nightActions.divineTarget = target.char.id;
+          console.log(`🔮 占い師が${target.char.name}を占う`);
+        }
+      }
+      
+      // 騎士の護衛先決定
+      const bodyguards = getAlivePlayersByRole('bodyguard');
+      if (bodyguards.length > 0) {
+        const others = alive.filter(p => p.role !== 'bodyguard');
+        if (others.length > 0) {
+          const target = others[Math.floor(Math.random() * others.length)];
+          wolfGame.nightActions.guardTarget = target.char.id;
+          console.log(`🛡️ 騎士が${target.char.name}を護衛`);
+        }
+      }
+    }
+    
+    // ============================================================
+    // 投票処理
+    // ============================================================
+    
+    function processVotes() {
+      console.log('🗳️ 投票を集計中...');
+      
+      // 得票数をカウント
+      const voteCount = {};
+      Object.values(wolfGame.votes).forEach(targetId => {
+        voteCount[targetId] = (voteCount[targetId] || 0) + 1;
+      });
+      
+      // 最多得票を算出
+      let maxVotes = 0;
+      let maxVotedIds = [];
+      
+      Object.entries(voteCount).forEach(([playerId, count]) => {
+        if (count > maxVotes) {
+          maxVotes = count;
+          maxVotedIds = [playerId];
+        } else if (count === maxVotes) {
+          maxVotedIds.push(playerId);
+        }
+      });
+      
+      wolfGame.lastExecuted = null;
+      
+      // 同票でなければ処刑
+      if (maxVotedIds.length === 1) {
+        const target = wolfGame.players.find(p => p.char.id === maxVotedIds[0]);
+        if (target) {
+          target.isAlive = false;
+          wolfGame.lastExecuted = target;
+          console.log(`⚖️ ${target.char.name}(${wolfRoles[target.role].name})が処刑された`);
+        }
+      } else {
+        console.log('⚖️ 同票のため処刑なし');
+      }
+      
+      // 投票をリセット
+      wolfGame.votes = {};
+    }
+    
+    // AIによる投票決定
+    function aiDecideVotes() {
+      const alive = getAlivePlayers();
+      
+      // 投票をリセット（プレイヤーの投票は維持）
+      const playerVote = wolfGame.votes['player'];
+      wolfGame.votes = {};
+      if (playerVote) wolfGame.votes['player'] = playerVote;
+      
+      alive.forEach(player => {
+        // 投票対象: 生存しているAIプレイヤー + プレイヤー自身
+        // （プレイヤーは 'player' として識別されるが、投票対象としてはAIキャラのみ）
+        let target;
+        
+        if (player.role === 'werewolf') {
+          // 人狼は村人陣営のAIから選ぶ
+          const villagers = alive.filter(p => p.char.id !== player.char.id && wolfRoles[p.role].team === 'village');
+          if (villagers.length > 0) {
+            target = villagers[Math.floor(Math.random() * villagers.length)];
+          }
+        } else {
+          // 村人陣営はランダム（自分以外のAI）
+          const others = alive.filter(p => p.char.id !== player.char.id);
+          if (others.length > 0) {
+            target = others[Math.floor(Math.random() * others.length)];
+          }
+        }
+        
+        if (target) {
+          wolfGame.votes[player.char.id] = target.char.id;
+        }
+      });
+    }
+    
+    // ============================================================
+    // UI関数
+    // ============================================================
+    
+    function selectWolfDiff(el) {
+      document.querySelectorAll('.wolf-diff-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      wolfGame.difficulty = el.dataset.diff;
+    }
+    
+    function selectWolfCount(el) {
+      document.querySelectorAll('.wolf-count-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      wolfGame.playerCount = parseInt(el.dataset.count);
+      updateRolePreview();
+    }
+    
+    function updateRolePreview() {
+      const config = wolfConfigs[wolfGame.playerCount];
+      const villagerCount = config.players - config.werewolves - config.seer - config.bodyguard;
+      let preview = `🐺×${config.werewolves} 🧑‍🌾×${villagerCount}`;
+      if (config.seer > 0) preview += ` 🔮×${config.seer}`;
+      if (config.bodyguard > 0) preview += ` 🛡️×${config.bodyguard}`;
+      document.getElementById('rolePreview').textContent = preview;
+    }
+    
+    // ============================================================
+    // メインゲームフロー
+    // ============================================================
+    
+    function startWerewolf() {
+      initWolfGame();
+      showRoleReveal();
+    }
+    
+    function showRoleReveal() {
+      const role = wolfGame.playerRole;
+      const roleInfo = wolfRoles[role];
+      const isWolf = roleInfo.team === 'wolf';
+      
+      // 役職表示
+      document.getElementById('wolfPlayerRoleIcon').textContent = roleInfo.icon;
+      document.getElementById('wolfPlayerRoleName').textContent = roleInfo.name;
+      document.getElementById('wolfPlayerRoleName').className = `wolf-role-reveal-name ${isWolf ? 'wolf' : 'village'}`;
+      document.getElementById('wolfPlayerTeam').textContent = isWolf ? '人狼陣営' : '村人陣営';
+      document.getElementById('wolfPlayerTeam').className = `wolf-role-reveal-team ${isWolf ? 'wolf' : 'village'}`;
+      
+      // 役職説明とミッション
+      const roleDescs = {
+        villager: { desc: '特別な能力はないが、推理力で人狼を見抜け！', mission: '議論で人狼を見抜き、投票で処刑せよ' },
+        werewolf: { desc: '夜に村人を1人襲撃できる。バレずに生き残れ！', mission: '夜に村人を襲撃し、村を支配せよ' },
+        seer: { desc: '夜に1人を占い、人狼かどうか知ることができる', mission: '占い結果を活かして人狼を見つけよう' },
+        bodyguard: { desc: '夜に1人を護衛し、人狼の襲撃から守れる', mission: '重要な村人を人狼から守れ' }
+      };
+      
+      document.getElementById('wolfPlayerRoleDesc').textContent = roleDescs[role].desc;
+      document.getElementById('wolfMissionText').textContent = roleDescs[role].mission;
+      
+      // 人狼なら仲間を表示
+      const alliesSection = document.getElementById('wolfAlliesSection');
+      if (isWolf) {
+        const allies = wolfGame.players.filter(p => p.role === 'werewolf');
+        if (allies.length > 0) {
+          document.getElementById('wolfAlliesList').innerHTML = allies.map(p => `
+            <div class="wolf-ally-card">
+              <div class="wolf-ally-avatar ${p.char.color}">${p.char.avatar}</div>
+              <div class="wolf-ally-name">${p.char.name}</div>
+            </div>
+          `).join('');
+          alliesSection.style.display = 'block';
+        } else {
+          alliesSection.style.display = 'none';
+        }
+      } else {
+        alliesSection.style.display = 'none';
+      }
+      
+      showScreen('werewolfRoleScreen');
+    }
+    
+    // 🌙 夜フェーズ
+    function startNightPhase() {
+      wolfGame.phase = 'night';
+      wolfGame.selectedAttack = null;
+      
+      // プレイヤーが人狼なら襲撃選択画面へ
+      if (wolfGame.playerRole === 'werewolf') {
+        showNightAttackScreen();
+      } else {
+        // 村人は観戦
+        updateSurvivorsList();
+        document.getElementById('wolfNightText').textContent = '人狼が誰かを襲撃中...';
+        showScreen('werewolfNightScreen');
+        
+        // AIが夜のアクションを決定
+        aiDecideNightActions();
+        
+        // 3秒後に夜のアクションを処理して朝へ
+        setTimeout(() => {
+          processNightActions();
+          showMorningPhase();
+        }, 3000);
+      }
+    }
+    
+    // 人狼プレイヤー用の襲撃選択画面
+    function showNightAttackScreen() {
+      // 村人陣営の生存者を表示（人狼は襲撃できない）
+      const targets = wolfGame.players.filter(p => p.isAlive && wolfRoles[p.role].team === 'village');
+      
+      document.getElementById('wolfAttackGrid').innerHTML = targets.map(player => `
+        <div class="wolf-attack-card" data-id="${player.char.id}" onclick="selectNightAttack(this, '${player.char.id}')">
+          <div class="wolf-attack-avatar ${player.char.color}">${player.char.avatar}</div>
+          <div class="wolf-attack-info">
+            <div class="wolf-attack-name">${player.char.name}</div>
+            <div class="wolf-attack-desc">${player.char.grade} / ${player.char.personality}</div>
+          </div>
+          <div class="wolf-attack-check"></div>
+        </div>
+      `).join('');
+      
+      document.getElementById('wolfAttackBtn').disabled = true;
+      showScreen('werewolfNightAttackScreen');
+    }
+    
+    function selectNightAttack(el, charId) {
+      document.querySelectorAll('.wolf-attack-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      wolfGame.selectedAttack = charId;
+      document.getElementById('wolfAttackBtn').disabled = false;
+    }
+    
+    function submitNightAttack() {
+      if (!wolfGame.selectedAttack) return;
+      
+      // プレイヤーの選択を夜アクションに設定
+      wolfGame.nightActions.killTarget = wolfGame.selectedAttack;
+      
+      // 他のAI人狼のアクションは無視（プレイヤーが決定権を持つ）
+      // 騎士と占い師のアクションだけAIが決定
+      const alive = getAlivePlayers();
+      
+      // 占い師のAI
+      const seers = getAlivePlayersByRole('seer');
+      if (seers.length > 0) {
+        const others = alive.filter(p => p.role !== 'seer');
+        if (others.length > 0) {
+          const target = others[Math.floor(Math.random() * others.length)];
+          wolfGame.nightActions.divineTarget = target.char.id;
+        }
+      }
+      
+      // 騎士のAI
+      const bodyguards = getAlivePlayersByRole('bodyguard');
+      if (bodyguards.length > 0) {
+        const others = alive.filter(p => p.role !== 'bodyguard');
+        if (others.length > 0) {
+          const target = others[Math.floor(Math.random() * others.length)];
+          wolfGame.nightActions.guardTarget = target.char.id;
+        }
+      }
+      
+      // 夜のアクションを処理
+      processNightActions();
+      showMorningPhase();
+    }
+    
+    // ☀️ 朝フェーズ（結果表示）
+    function showMorningPhase() {
+      wolfGame.dayCount++;
+      
+      const victim = wolfGame.lastKilled;
+      const icon = document.getElementById('wolfMorningIcon');
+      const title = document.getElementById('wolfMorningTitle');
+      const text = document.getElementById('wolfMorningText');
+      const victimDiv = document.getElementById('wolfMorningVictim');
+      
+      if (victim) {
+        // 誰かが死んだ
+        icon.textContent = '💀';
+        title.textContent = `${wolfGame.dayCount}日目の朝`;
+        title.className = 'wolf-morning-title danger';
+        text.textContent = '昨夜、犠牲者が出た...';
+        victimDiv.className = 'wolf-morning-victim';
+        victimDiv.innerHTML = `
+          <div class="wolf-morning-victim-avatar">${victim.char.avatar}</div>
+          <div class="wolf-morning-victim-name">${victim.char.name}が襲撃された</div>
+          <div class="wolf-morning-victim-text">残り${getAlivePlayers().length}人</div>
+        `;
+      } else {
+        // 護衛成功
+        icon.textContent = '🛡️';
+        title.textContent = `${wolfGame.dayCount}日目の朝`;
+        title.className = 'wolf-morning-title safe';
+        text.textContent = '誰も襲撃されなかった！';
+        victimDiv.className = 'wolf-morning-victim safe';
+        victimDiv.innerHTML = `
+          <div class="wolf-morning-victim-avatar">✨</div>
+          <div class="wolf-morning-victim-name">護衛成功！</div>
+          <div class="wolf-morning-victim-text">残り${getAlivePlayers().length}人</div>
+        `;
+      }
+      
+      // 勝敗チェック
+      if (checkWinCondition()) {
+        setTimeout(() => showGameResult(), 2000);
+        return;
+      }
+      
+      showScreen('werewolfMorningScreen');
+    }
+    
+    // 議論開始
+    function startDayDiscussion() {
+      wolfGame.phase = 'day';
+      
+      // 議題を選択
+      let availableTopics = wolfTopics.filter(t => !wolfGame.usedTopics.includes(t));
+      if (availableTopics.length === 0) {
+        wolfGame.usedTopics = [];
+        availableTopics = wolfTopics;
+      }
+      wolfGame.currentTopic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
+      wolfGame.usedTopics.push(wolfGame.currentTopic);
+      
+      // UI更新
+      document.getElementById('wolfCurrentTurn').textContent = `${wolfGame.dayCount}日目`;
+      document.getElementById('wolfTopicText').textContent = wolfGame.currentTopic;
+      document.getElementById('wolfChatBox').innerHTML = '';
+      document.getElementById('wolfChatInput').value = '';
+      
+      // 役職バッジを更新
+      const roleInfo = wolfRoles[wolfGame.playerRole];
+      const badge = document.getElementById('wolfPlayerBadge');
+      badge.textContent = `${roleInfo.icon} ${roleInfo.name}`;
+      badge.className = `wolf-player-role-badge ${roleInfo.team === 'wolf' ? 'wolf' : 'village'}`;
+      
+      // 生存者バーを更新
+      updateSurvivorsBar();
+      
+      // タイマー開始（45秒）
+      wolfGame.timeLeft = 45;
+      updateWolfTimer();
+      if (wolfGame.timer) clearInterval(wolfGame.timer);
+      wolfGame.timer = setInterval(wolfTick, 1000);
+      
+      showScreen('werewolfGameScreen');
+      
+      // AI応答生成
+      setTimeout(() => generateWolfResponses(), 1000);
+    }
+    
+    function wolfTick() {
+      wolfGame.timeLeft--;
+      updateWolfTimer();
+      if (wolfGame.timeLeft <= 0) {
+        clearInterval(wolfGame.timer);
+        showWolfVoteScreen();
+      }
+    }
+    
+    function updateWolfTimer() {
+      document.getElementById('wolfTimerCount').textContent = wolfGame.timeLeft;
+      const timerEl = document.getElementById('wolfTimer');
+      timerEl.classList.toggle('warning', wolfGame.timeLeft <= 10);
+    }
+    
+    function updateSurvivorsList() {
+      const container = document.getElementById('wolfNightSurvivors');
+      container.innerHTML = wolfGame.players.map(p => `
+        <div class="wolf-night-survivor ${p.char.color} ${p.isAlive ? '' : 'dead'}">${p.char.avatar}</div>
+      `).join('');
+    }
+    
+    function updateSurvivorsBar() {
+      const container = document.getElementById('wolfSurvivorsBar');
+      // プレイヤー（あなた）を最初に表示
+      let html = `<div class="wolf-survivor-icon you-icon" title="あなた">👤</div>`;
+      // AIプレイヤー
+      html += wolfGame.players.map(p => `
+        <div class="wolf-survivor-icon ${p.char.color} ${p.isAlive ? '' : 'dead'}" title="${p.char.name}">${p.char.avatar}</div>
+      `).join('');
+      container.innerHTML = html;
+    }
+    
+    // AI応答生成（複数ラウンド）
+    async function generateWolfResponses() {
+      // 45秒間、複数ラウンドの会話を生成
+      for (let round = 0; round < 3; round++) {
+        const alive = getAlivePlayers();
+        const shuffled = [...alive].sort(() => Math.random() - 0.5);
+        
+        for (let i = 0; i < shuffled.length; i++) {
+          const player = shuffled[i];
+          await new Promise(r => setTimeout(r, 1500 + Math.random() * 2000));
+          if (wolfGame.timeLeft <= 5 || wolfGame.phase !== 'day') return;
+          
+          const response = await generateWolfCharResponse(player.char, player.role);
+          addWolfMessage(player.char, response);
+        }
+        
+        // ラウンド間の間隔
+        await new Promise(r => setTimeout(r, 2000));
+        if (wolfGame.timeLeft <= 10 || wolfGame.phase !== 'day') return;
+      }
+    }
+    
+    async function generateWolfCharResponse(char, role) {
+      // 他のプレイヤー名を取得
+      const otherNames = wolfGame.players
+        .filter(p => p.char.id !== char.id && p.isAlive)
+        .map(p => p.char.name);
+      const randomOther = otherNames[Math.floor(Math.random() * otherNames.length)] || '誰か';
+      
+      // 人狼の特徴的なミス（難易度別）
+      const wolfMistakes = {
+        easy: [
+          '必ず「私は村人です」「自分は人狼じゃない」のような自己弁護を入れてください。',
+          '「思います」「考えます」など丁寧語を混ぜてください。キャラの口調を少し崩してください。',
+          '質問に対して少し長く説明的に答えてください。',
+          '他の人を疑う時、理由を具体的に言えずに「なんとなく」「雰囲気が」と曖昧にしてください。'
+        ],
+        normal: [
+          '時々キャラの口調を忘れて標準語になってください。',
+          '他の人を急に強く疑ってください。',
+          '質問の答えが少しズレることがあります。'
+        ],
+        hard: [
+          'ほぼ完璧だが、微妙に他人を疑いすぎてください。'
+        ]
+      };
+      
+      // 役職別のプロンプト調整
+      const rolePrompts = {
+        villager: `村人として自然に会話してください。他のプレイヤーの発言に反応したり、怪しい人がいれば指摘してOK。`,
+        werewolf: {
+          easy: `【重要】あなたは人狼です。村人のふりをしますが、以下のミスを必ず入れてください：
+${wolfMistakes.easy[Math.floor(Math.random() * wolfMistakes.easy.length)]}
+他の人（${randomOther}など）を疑って自分への疑いをそらしてください。`,
+          normal: `【重要】あなたは人狼です。村人のふりをしますが、以下の特徴があります：
+${wolfMistakes.normal[Math.floor(Math.random() * wolfMistakes.normal.length)]}
+他の人を疑って自分への疑いをそらしてください。`,
+          hard: `あなたは人狼です。完璧に村人のふりをしつつ、自然に他の人を疑ってください。`
+        },
+        seer: `占い師として会話してください。「${randomOther}は大丈夫そう」「〇〇はちょっと気になる」のような観察を混ぜてください。`,
+        bodyguard: `騎士として会話してください。「${randomOther}は信用できそう」「〇〇を守りたい」のような発言を混ぜてください。`
+      };
+      
+      let roleHint = '';
+      if (role === 'werewolf') {
+        roleHint = rolePrompts.werewolf[wolfGame.difficulty];
+      } else if (rolePrompts[role]) {
+        roleHint = rolePrompts[role];
+      }
+      
+      const prompt = `あなたは「${char.name}」という${char.grade}の${char.personality}な性格のキャラクターです。
+口調: ${char.tone}を使う
+
+【状況】人狼ゲームの議論中（${wolfGame.dayCount}日目）
+【お題】${wolfGame.currentTopic}
+
+${roleHint}
+
+ルール:
+- 1〜2文で短く回答
+- キャラの口調を守る（人狼の場合は指示に従って崩す）
+- 中学生らしい回答
+- 他のプレイヤー（${otherNames.join('、')}）の名前を出してもOK
+- 回答のみ出力`;
+
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 100, messages: [{ role: 'user', content: prompt }] })
+        });
+        const data = await res.json();
+        return data.content[0].text;
+      } catch (e) {
+        // フォールバック（人狼は違和感のある発言）
+        if (role === 'werewolf') {
+          const wolfFallbacks = [
+            `えっと...${randomOther}が怪しいと思います。私は村人ですよ。`,
+            `${randomOther}さん、なんか変じゃないですか？自分は違うんで。`,
+            `うーん、${randomOther}かな...いや、なんとなくそう思っただけです。`
+          ];
+          return wolfFallbacks[Math.floor(Math.random() * wolfFallbacks.length)];
+        }
+        const fallbacks = { 
+          takuya: `${randomOther}ちょっと怪しくね？`, 
+          misaki: `うーん...${randomOther}さん、大丈夫かな...`, 
+          kenta: `${randomOther}、なんか変だな`, 
+          ayaka: `てか${randomOther}まじ怪しくない？`,
+          ryota: `${randomOther}の発言、ちょっと気になるんだよね`,
+          yui: `${randomOther}さんはどう思いますか？`,
+          sota: `${randomOther}っしょ、怪しいの`
+        };
+        return fallbacks[char.id] || `${randomOther}が怪しいかも`;
+      }
+    }
+    
+    function addWolfMessage(char, text) {
+      const chatBox = document.getElementById('wolfChatBox');
+      const isYou = char === 'you';
+      chatBox.innerHTML += `
+        <div class="wolf-chat-msg ${isYou ? 'you' : ''}">
+          <div class="wolf-chat-header">
+            <div class="wolf-chat-avatar ${isYou ? '' : char.color}">${isYou ? '👤' : char.avatar}</div>
+            <div class="wolf-chat-name">${isYou ? 'あなた' : char.name}</div>
+          </div>
+          <div class="wolf-chat-text">${text}</div>
+        </div>
+      `;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    
+    function sendWolfMessage() {
+      const input = document.getElementById('wolfChatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      addWolfMessage('you', text);
+      input.value = '';
+    }
+    
+    document.getElementById('wolfChatInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendWolfMessage(); });
+    
+    // 投票画面（議論終了後）
+    function showWolfVoteScreen() {
+      clearInterval(wolfGame.timer);
+      
+      // プレイヤーが人狼なら投票は観戦のみ
+      if (wolfGame.playerRole === 'werewolf') {
+        showWolfVoteWatchScreen();
+      } else {
+        // 村人陣営は投票に参加
+        showWolfVoteSelectScreen();
+      }
+    }
+    
+    // 人狼プレイヤー用：投票観戦画面
+    function showWolfVoteWatchScreen() {
+      // AIたちが投票を決定
+      aiDecideVotes();
+      processVotes();
+      
+      // 処刑結果画面へ
+      const executed = wolfGame.lastExecuted;
+      if (executed) {
+        const isWerewolf = executed.role === 'werewolf';
+        const roleInfo = wolfRoles[executed.role];
+        
+        document.getElementById('wolfExecutionIcon').textContent = isWerewolf ? '😱' : '😈';
+        document.getElementById('wolfExecutionTitle').textContent = isWerewolf ? '仲間が処刑された...' : '村人を処刑できた！';
+        document.getElementById('wolfExecutionTarget').innerHTML = `
+          <div class="wolf-execution-target-avatar">${executed.char.avatar}</div>
+          <div class="wolf-execution-target-name">${executed.char.name}</div>
+        `;
+        document.getElementById('wolfExecutionRole').textContent = `${roleInfo.icon} ${roleInfo.name}だった`;
+        document.getElementById('wolfExecutionRole').className = `wolf-execution-role ${isWerewolf ? 'wolf' : 'village'}`;
+        
+        showScreen('werewolfExecutionScreen');
+      } else {
+        // 同票で処刑なし
+        afterExecution();
+      }
+    }
+    
+    // 村人プレイヤー用：投票選択画面
+    function showWolfVoteSelectScreen() {
+      wolfGame.selectedVote = null;
+      
+      // チャット履歴をコピー
+      const chatHistory = document.getElementById('wolfChatBox').innerHTML;
+      document.getElementById('wolfVoteChatBox').innerHTML = chatHistory;
+      
+      const alive = getAlivePlayers();
+      document.getElementById('wolfVoteGrid').innerHTML = alive.map((player, i) => `
+        <div class="wolf-vote-card" data-id="${player.char.id}" onclick="selectWolfVote(this, '${player.char.id}')">
+          <div class="wolf-vote-avatar ${player.char.color}">${player.char.avatar}</div>
+          <div class="wolf-vote-info">
+            <div class="wolf-vote-name">${player.char.name}</div>
+            <div class="wolf-vote-desc">${player.char.grade} / ${player.char.personality}</div>
+          </div>
+          <div class="wolf-vote-check"></div>
+        </div>
+      `).join('');
+      
+      document.getElementById('wolfVoteBtn').disabled = true;
+      showScreen('werewolfVoteScreen');
+    }
+    
+    function selectWolfVote(el, charId) {
+      document.querySelectorAll('.wolf-vote-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      wolfGame.selectedVote = charId;
+      document.getElementById('wolfVoteBtn').disabled = false;
+    }
+    
+    function submitWolfVote() {
+      if (!wolfGame.selectedVote) return;
+      
+      // プレイヤーの投票を記録
+      wolfGame.votes['player'] = wolfGame.selectedVote;
+      
+      // AIも投票する
+      aiDecideVotes();
+      
+      // 投票結果画面を表示
+      showVoteResult();
+    }
+    
+    function showVoteResult() {
+      // 投票リストを表示
+      const voteListEl = document.getElementById('wolfVoteResultList');
+      let voteListHtml = '';
+      
+      // プレイヤーの投票
+      const playerTarget = wolfGame.players.find(p => p.char.id === wolfGame.votes['player']);
+      if (playerTarget) {
+        voteListHtml += `
+          <div class="wolf-vote-item">
+            <div class="wolf-vote-item-voter">
+              <div class="wolf-vote-item-avatar you-icon">👤</div>
+              <div class="wolf-vote-item-name">あなた</div>
+            </div>
+            <div class="wolf-vote-item-arrow">→</div>
+            <div class="wolf-vote-item-target">
+              <div class="wolf-vote-item-avatar ${playerTarget.char.color}">${playerTarget.char.avatar}</div>
+              <div class="wolf-vote-item-name">${playerTarget.char.name}</div>
+            </div>
+          </div>
+        `;
+      }
+      
+      // AIの投票
+      wolfGame.players.filter(p => p.isAlive).forEach(player => {
+        const targetId = wolfGame.votes[player.char.id];
+        const target = wolfGame.players.find(p => p.char.id === targetId);
+        if (target) {
+          voteListHtml += `
+            <div class="wolf-vote-item">
+              <div class="wolf-vote-item-voter">
+                <div class="wolf-vote-item-avatar ${player.char.color}">${player.char.avatar}</div>
+                <div class="wolf-vote-item-name">${player.char.name}</div>
+              </div>
+              <div class="wolf-vote-item-arrow">→</div>
+              <div class="wolf-vote-item-target">
+                <div class="wolf-vote-item-avatar ${target.char.color}">${target.char.avatar}</div>
+                <div class="wolf-vote-item-name">${target.char.name}</div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      
+      voteListEl.innerHTML = voteListHtml;
+      
+      // 得票数を集計
+      const voteCount = {};
+      Object.values(wolfGame.votes).forEach(targetId => {
+        voteCount[targetId] = (voteCount[targetId] || 0) + 1;
+      });
+      
+      // 最多得票を算出
+      let maxVotes = 0;
+      let maxVotedIds = [];
+      Object.entries(voteCount).forEach(([playerId, count]) => {
+        if (count > maxVotes) {
+          maxVotes = count;
+          maxVotedIds = [playerId];
+        } else if (count === maxVotes) {
+          maxVotedIds.push(playerId);
+        }
+      });
+      
+      // 集計バーを表示
+      const tallyEl = document.getElementById('wolfVoteResultTally');
+      const sortedVotes = Object.entries(voteCount).sort((a, b) => b[1] - a[1]);
+      const totalVotes = Object.values(voteCount).reduce((a, b) => a + b, 0);
+      
+      let tallyHtml = '<div class="wolf-tally-title">📊 得票数</div><div class="wolf-tally-bars">';
+      sortedVotes.forEach(([playerId, count]) => {
+        const player = wolfGame.players.find(p => p.char.id === playerId);
+        if (player) {
+          const pct = Math.round((count / totalVotes) * 100);
+          const isMax = maxVotedIds.length === 1 && maxVotedIds[0] === playerId;
+          tallyHtml += `
+            <div class="wolf-tally-row">
+              <div class="wolf-tally-avatar ${player.char.color}">${player.char.avatar}</div>
+              <div class="wolf-tally-bar-container">
+                <div class="wolf-tally-bar ${isMax ? 'max' : ''}" style="width: ${pct}%">
+                  <span class="wolf-tally-count">${count}票</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+      tallyHtml += '</div>';
+      tallyEl.innerHTML = tallyHtml;
+      
+      // 処刑判定
+      const decisionEl = document.getElementById('wolfVoteResultDecision');
+      if (maxVotedIds.length === 1) {
+        const executed = wolfGame.players.find(p => p.char.id === maxVotedIds[0]);
+        executed.isAlive = false;
+        wolfGame.lastExecuted = executed;
+        decisionEl.className = 'wolf-vote-result-decision';
+        decisionEl.innerHTML = `<div class="wolf-vote-result-decision-text">⚖️ ${executed.char.name}が処刑される...</div>`;
+      } else {
+        wolfGame.lastExecuted = null;
+        decisionEl.className = 'wolf-vote-result-decision tie';
+        decisionEl.innerHTML = `<div class="wolf-vote-result-decision-text">⚖️ 同票のため処刑なし</div>`;
+      }
+      
+      showScreen('werewolfVoteResultScreen');
+    }
+    
+    function showExecutionResult() {
+      const executed = wolfGame.lastExecuted;
+      
+      if (executed) {
+        const isWerewolf = executed.role === 'werewolf';
+        const roleInfo = wolfRoles[executed.role];
+        
+        // プレイヤーが人狼かどうかで表示を変える
+        let icon, title;
+        if (wolfGame.playerTeam === 'wolf') {
+          // 人狼プレイヤー視点
+          icon = isWerewolf ? '😱' : '😈';
+          title = isWerewolf ? '仲間が処刑された...' : '村人を処刑できた！';
+        } else {
+          // 村人プレイヤー視点
+          icon = isWerewolf ? '🎯' : '😱';
+          title = isWerewolf ? '人狼を処刑した！' : '村人を処刑してしまった...';
+        }
+        
+        document.getElementById('wolfExecutionIcon').textContent = icon;
+        document.getElementById('wolfExecutionTitle').textContent = title;
+        document.getElementById('wolfExecutionTarget').innerHTML = `
+          <div class="wolf-execution-target-avatar">${executed.char.avatar}</div>
+          <div class="wolf-execution-target-name">${executed.char.name}</div>
+        `;
+        document.getElementById('wolfExecutionRole').textContent = `${roleInfo.icon} ${roleInfo.name}だった`;
+        document.getElementById('wolfExecutionRole').className = `wolf-execution-role ${isWerewolf ? 'wolf' : 'village'}`;
+        
+        showScreen('werewolfExecutionScreen');
+      } else {
+        // 同票で処刑なし → 次のフェーズへ
+        afterExecution();
+      }
+    }
+    
+    function afterExecution() {
+      // 勝敗チェック
+      if (checkWinCondition()) {
+        showGameResult();
+        return;
+      }
+      
+      // ゲーム続行 → 夜フェーズへ
+      startNightPhase();
+    }
+    
+    function showGameResult() {
+      const isVillageWin = wolfGame.winResult === 'village';
+      const playerWon = (wolfGame.playerTeam === 'village' && isVillageWin) || 
+                        (wolfGame.playerTeam === 'wolf' && !isVillageWin);
+      
+      // スコア更新（プレイヤーが勝ったかどうか）
+      if (playerWon) {
+        wolfGame.humanWins++;
+      } else {
+        wolfGame.aiWins++;
+      }
+      updateWolfScore();
+      
+      // 結果画面
+      const icon = document.getElementById('wolfResultIcon');
+      const title = document.getElementById('wolfResultTitle');
+      const subtitle = document.getElementById('wolfResultSubtitle');
+      
+      const playerRoleInfo = wolfRoles[wolfGame.playerRole];
+      
+      if (playerWon) {
+        icon.textContent = '🎉';
+        title.textContent = '勝利！';
+        title.className = 'wolf-result-title win';
+        if (wolfGame.playerTeam === 'wolf') {
+          subtitle.textContent = `${playerRoleInfo.icon} ${playerRoleInfo.name}として村を支配した！`;
+        } else {
+          subtitle.textContent = `${playerRoleInfo.icon} ${playerRoleInfo.name}として人狼を全滅させた！`;
+        }
+      } else {
+        icon.textContent = '💀';
+        title.textContent = '敗北...';
+        title.className = 'wolf-result-title lose';
+        if (wolfGame.playerTeam === 'wolf') {
+          subtitle.textContent = `${playerRoleInfo.icon} ${playerRoleInfo.name}だったが人狼が全滅...`;
+        } else {
+          subtitle.textContent = `${playerRoleInfo.icon} ${playerRoleInfo.name}だったが村が滅びた...`;
+        }
+      }
+      
+      // プレイヤーの役職を最初に表示
+      let cardsHtml = `
+        <div class="wolf-result-card ${wolfGame.playerTeam === 'wolf' ? 'werewolf' : ''}">
+          <div class="wolf-result-card-avatar you-icon">👤</div>
+          <div class="wolf-result-card-name">あなた</div>
+          <span class="wolf-result-card-role ${wolfGame.playerTeam === 'wolf' ? 'werewolf' : 'villager'}">${playerRoleInfo.icon} ${playerRoleInfo.name}</span>
+        </div>
+      `;
+      
+      // AIプレイヤーの役職を公開
+      cardsHtml += wolfGame.players.map((player) => {
+        const roleInfo = wolfRoles[player.role];
+        const isWolf = roleInfo.team === 'wolf';
+        return `
+          <div class="wolf-result-card ${isWolf ? 'werewolf' : ''} ${player.isAlive ? '' : 'dead'}">
+            <div class="wolf-result-card-avatar ${player.char.color}">${player.char.avatar}${player.isAlive ? '' : '💀'}</div>
+            <div class="wolf-result-card-name">${player.char.name}</div>
+            <span class="wolf-result-card-role ${isWolf ? 'werewolf' : 'villager'}">${roleInfo.icon} ${roleInfo.name}</span>
+          </div>
+        `;
+      }).join('');
+      
+      document.getElementById('wolfResultCards').innerHTML = cardsHtml;
+      
+      showScreen('werewolfResultScreen');
+    }
+    
+    function updateWolfScore() {
+      document.getElementById('wolfHumanWins').textContent = wolfGame.humanWins;
+      document.getElementById('wolfAiWins').textContent = wolfGame.aiWins;
+      
+      // 結果バー更新
+      const total = wolfGame.humanWins + wolfGame.aiWins;
+      const humanPct = total > 0 ? Math.round((wolfGame.humanWins / total) * 100) : 50;
+      const aiPct = 100 - humanPct;
+      document.getElementById('wolfResultBarHuman').style.width = humanPct + '%';
+      document.getElementById('wolfResultBarHuman').textContent = humanPct + '%';
+      document.getElementById('wolfResultBarAi').style.width = aiPct + '%';
+      document.getElementById('wolfResultBarAi').textContent = aiPct + '%';
+    }
+    
+    function restartWerewolf() {
+      startWerewolf();
+    }
+    
+    // ===== INIT =====
+    renderFeed();
+  </script>
+
+</body>
+</html>
