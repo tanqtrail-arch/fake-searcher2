@@ -1087,6 +1087,67 @@
     @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
     .bounce { animation: bounce 0.5s ease; }
     .shake { animation: shake 0.4s ease; }
+
+    @keyframes slideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slideInLeft { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes glow { 0%,100%{box-shadow:0 0 5px rgba(99,102,241,0.3)} 50%{box-shadow:0 0 20px rgba(99,102,241,0.6)} }
+    @keyframes correctPulse { 0%{box-shadow:0 0 0 rgba(34,197,94,0)} 50%{box-shadow:0 0 30px rgba(34,197,94,0.5)} 100%{box-shadow:0 0 0 rgba(34,197,94,0)} }
+    @keyframes wrongPulse { 0%{box-shadow:0 0 0 rgba(236,72,153,0)} 50%{box-shadow:0 0 30px rgba(236,72,153,0.5)} 100%{box-shadow:0 0 0 rgba(236,72,153,0)} }
+
+    .slide-in { animation: slideIn 0.3s ease-out; }
+    .slide-in-left { animation: slideInLeft 0.3s ease-out; }
+    .glow { animation: glow 2s infinite; }
+    .answer-btn.correct { animation: correctPulse 0.5s ease; }
+    .answer-btn.wrong { animation: wrongPulse 0.5s ease; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .hero-logo .text { font-size: 36px; }
+      .hero-logo .icon { font-size: 32px; }
+      .topic-grid { grid-template-columns: repeat(2, 1fr); }
+      .difficulty-grid { grid-template-columns: repeat(2, 1fr); }
+      .answer-grid { grid-template-columns: 1fr; }
+      .grade-display-label { font-size: 24px; }
+      .quiz-title { font-size: 16px; }
+      .fact-text { font-size: 13px; }
+      .result-title { font-size: 28px; }
+      .result-stats { gap: 20px; }
+      .result-stat-value { font-size: 24px; }
+      .wolf-chat-box { height: 250px; }
+      .nav-tab { padding: 8px 12px; font-size: 11px; }
+      .nav-tab .icon { font-size: 14px; }
+      .header-stats { font-size: 10px; padding: 6px 10px; }
+      .werewolf-title { font-size: 32px; }
+      .wolf-result-title { font-size: 24px; }
+    }
+
+    @media (max-width: 400px) {
+      .hero-logo .text { font-size: 28px; }
+      .logo-text { font-size: 18px; }
+      .topic-grid { gap: 6px; }
+      .topic-btn { padding: 10px 6px; }
+      .topic-btn-icon { font-size: 20px; }
+      .topic-btn-text { font-size: 10px; }
+    }
+
+    /* ===== TOAST NOTIFICATION ===== */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 300;
+      animation: slideIn 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .toast.success { border-color: #22c55e; }
+    .toast.error { border-color: #ef4444; }
   </style>
 </head>
 <body>
@@ -1909,27 +1970,39 @@
       el.classList.add('selected');
       state.selectedAnswer = parseInt(el.dataset.index);
       document.getElementById('submitAnswerBtn').disabled = false;
+      playSound('select');
     }
     
     function submitAnswer() {
       if(state.selectedAnswer === null) return;
-      
+
       const q = state.currentQuiz;
       const correct = q.facts[state.selectedAnswer].isLie;
       const correctIdx = q.facts.findIndex(f => f.isLie);
       const letters = ['A','B','C','D'];
-      
+
       document.querySelectorAll('.answer-btn').forEach(b => {
         b.classList.add('disabled');
         const idx = parseInt(b.dataset.index);
         if(q.facts[idx].isLie) b.classList.add('correct');
         else if(idx === state.selectedAnswer && !correct) b.classList.add('wrong');
       });
-      
-      if(correct) { state.humanWins++; state.streak++; }
-      else { state.aiWins++; state.streak = 0; }
-      
+
+      // サウンド再生
+      playSound(correct ? 'correct' : 'wrong');
+
+      if(correct) {
+        state.humanWins++;
+        state.streak++;
+        showToast('🎉 正解！FAKEを見抜いた！', 'success');
+      } else {
+        state.aiWins++;
+        state.streak = 0;
+        showToast('😈 AIの勝ち...騙された！', 'error');
+      }
+
       updateStats();
+      saveStats();
       setTimeout(() => showResult(correct, correctIdx, letters), 1200);
     }
     
@@ -2168,7 +2241,15 @@
       '人狼っぽい発言した人いた？',
       '自分が村人だって証明できる？',
       '誰を守りたい？',
-      '直感で怪しいのは？'
+      '直感で怪しいのは？',
+      '今一番信用できない人は？',
+      'なぜ自分は村人だと思う？',
+      '処刑されたくない理由は？',
+      '占い師いる？名乗り出て！',
+      '静かな人、何か言って！',
+      '最後に言いたいことある？',
+      '誰かの発言で気になったのは？',
+      '人狼ならどこに隠れる？'
     ];
     
     // ゲーム状態管理
@@ -2833,33 +2914,61 @@ ${roleHint}
 - 回答のみ出力`;
 
       try {
+        // APIキーがない場合はフォールバック
+        if (!state.apiKey) {
+          throw new Error('No API key');
+        }
         const res = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': state.apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
           body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 100, messages: [{ role: 'user', content: prompt }] })
         });
+        if (!res.ok) throw new Error('API error');
         const data = await res.json();
         return data.content[0].text;
       } catch (e) {
-        // フォールバック（人狼は違和感のある発言）
+        // フォールバック（キャラクター別・トピック別の応答）
+        const topicResponses = {
+          '昨日の夜、何してた？': {
+            takuya: ['普通に寝てたぜ！', 'ゲームしてたわ', 'え、なんで聞くの？'],
+            misaki: ['寝てたよ...', '本読んでた...かな', 'えっと...普通に...'],
+            kenta: ['別に、寝てただけだ', '関係ないだろ', '普通だよ'],
+            ayaka: ['まじ寝てたー', 'てか眠かったし', 'うち早寝だから'],
+            ryota: ['データの整理してたんだよね', '考え事してた', 'まあ普通に'],
+            yui: ['宿題してました', '読書ですかね', '早めに寝ました'],
+            sota: ['筋トレしてたわ', 'ストレッチっしょ', '寝てた']
+          },
+          default: {
+            takuya: [`${randomOther}ちょっと怪しくね？`, `なんか変だぜ`, `まあ様子見だな`],
+            misaki: [`うーん...${randomOther}さん...`, `どうなんだろう...`, `わからない...`],
+            kenta: [`${randomOther}、なんか変だな`, `別に`, `ふーん`],
+            ayaka: [`てか${randomOther}まじ怪しくない？`, `やばくない？`, `まじで？`],
+            ryota: [`${randomOther}の発言が気になる`, `論理的に考えると...`, `データ不足だね`],
+            yui: [`${randomOther}さんはどう思いますか？`, `難しいですね`, `みなさんの意見は？`],
+            sota: [`${randomOther}っしょ`, `まじでそれ`, `わかるわ`]
+          }
+        };
+
+        // 人狼は違和感のある発言
         if (role === 'werewolf') {
           const wolfFallbacks = [
             `えっと...${randomOther}が怪しいと思います。私は村人ですよ。`,
             `${randomOther}さん、なんか変じゃないですか？自分は違うんで。`,
-            `うーん、${randomOther}かな...いや、なんとなくそう思っただけです。`
+            `うーん、${randomOther}かな...いや、なんとなくそう思っただけです。`,
+            `自分は絶対村人なんで！${randomOther}を疑ったほうがいいと思います。`,
+            `正直に言うと...${randomOther}が怪しいかなって...`
           ];
           return wolfFallbacks[Math.floor(Math.random() * wolfFallbacks.length)];
         }
-        const fallbacks = { 
-          takuya: `${randomOther}ちょっと怪しくね？`, 
-          misaki: `うーん...${randomOther}さん、大丈夫かな...`, 
-          kenta: `${randomOther}、なんか変だな`, 
-          ayaka: `てか${randomOther}まじ怪しくない？`,
-          ryota: `${randomOther}の発言、ちょっと気になるんだよね`,
-          yui: `${randomOther}さんはどう思いますか？`,
-          sota: `${randomOther}っしょ、怪しいの`
-        };
-        return fallbacks[char.id] || `${randomOther}が怪しいかも`;
+
+        const responses = topicResponses[wolfGame.currentTopic] || topicResponses.default;
+        const charResponses = responses[char.id] || responses.takuya;
+        return charResponses[Math.floor(Math.random() * charResponses.length)];
       }
     }
     
@@ -3211,7 +3320,90 @@ ${roleHint}
       startWerewolf();
     }
     
+    // ===== ユーティリティ =====
+
+    // トースト通知
+    function showToast(message, type = 'info') {
+      const existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // サウンド効果（Web Audio API使用）
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      switch(type) {
+        case 'correct':
+          oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+          oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+          oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.4);
+          break;
+        case 'wrong':
+          oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+          oscillator.frequency.setValueAtTime(150, audioCtx.currentTime + 0.15);
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.3);
+          break;
+        case 'click':
+          oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+          gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.05);
+          break;
+        case 'select':
+          oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+          gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.1);
+          break;
+      }
+    }
+
+    // 統計データの保存・読み込み
+    function saveStats() {
+      const stats = {
+        humanWins: state.humanWins,
+        aiWins: state.aiWins,
+        streak: state.streak,
+        bestStreak: Math.max(state.streak, parseInt(localStorage.getItem('bestStreak') || '0')),
+        totalGames: state.humanWins + state.aiWins
+      };
+      localStorage.setItem('gameStats', JSON.stringify(stats));
+      localStorage.setItem('bestStreak', stats.bestStreak.toString());
+    }
+
+    function loadStats() {
+      const saved = localStorage.getItem('gameStats');
+      if (saved) {
+        const stats = JSON.parse(saved);
+        state.humanWins = stats.humanWins || 0;
+        state.aiWins = stats.aiWins || 0;
+        updateStats();
+      }
+    }
+
     // ===== INIT =====
+    loadStats();
     renderFeed();
   </script>
 
