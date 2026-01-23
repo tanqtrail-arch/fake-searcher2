@@ -1103,10 +1103,33 @@
       </span>
     </div>
     </div>
-    <div class="header-stats">
-      人類 <span class="human" id="headerHuman">50%</span> vs <span class="ai-score" id="headerAI">50%</span> AI
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="header-stats">
+        人類 <span class="human" id="headerHuman">50%</span> vs <span class="ai-score" id="headerAI">50%</span> AI
+      </div>
+      <button onclick="showSettings()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#888;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:16px;">⚙️</button>
     </div>
   </header>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:200;align-items:center;justify-content:center;">
+    <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:24px;max-width:400px;width:90%;margin:20px;">
+      <h2 style="font-size:18px;margin-bottom:16px;">⚙️ 設定</h2>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:8px;">Anthropic APIキー（オプション）</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;color:#fff;font-size:14px;">
+        <p style="font-size:11px;color:#666;margin-top:8px;">※APIキーがなくてもオフラインモードでプレイできます</p>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;color:#888;margin-bottom:8px;">現在のモード</div>
+        <div id="modeStatus" style="font-size:14px;padding:10px;background:rgba(34,197,94,0.1);border-radius:8px;color:#22c55e;">📴 オフラインモード</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="saveSettings()" style="flex:1;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;padding:14px;border-radius:10px;font-weight:700;cursor:pointer;">保存</button>
+        <button onclick="closeSettings()" style="flex:1;background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1);padding:14px;border-radius:10px;font-weight:700;cursor:pointer;">閉じる</button>
+      </div>
+    </div>
+  </div>
   
   <!-- Nav Tabs -->
   <nav class="nav-tabs" id="navTabs">
@@ -1603,7 +1626,41 @@
       selectedAnswer: null,
       isHumanQuiz: false,
       currentHumanQuiz: null,
-      targetGrade: 'middle'
+      targetGrade: 'middle',
+      apiKey: localStorage.getItem('anthropic_api_key') || '',
+      useOfflineMode: !localStorage.getItem('anthropic_api_key')
+    };
+
+    // ===== オフライン用クイズデータ =====
+    const offlineQuizzes = {
+      '生き物': [
+        {title:'タコの驚くべき能力',facts:[{text:'タコには心臓が3つある',isLie:false},{text:'タコの血液は青い',isLie:false},{text:'タコは8本の腕それぞれに脳がある',isLie:false},{text:'タコは陸上で1時間呼吸できる',isLie:true}],explanation:'タコは陸上では数分程度しか生きられません。皮膚呼吸である程度酸素を取り込めますが、1時間は不可能です。'},
+        {title:'イルカの不思議な生態',facts:[{text:'イルカは片目ずつ眠ることができる',isLie:false},{text:'イルカは超音波で会話する',isLie:false},{text:'イルカの皮膚は1時間ごとに再生する',isLie:true},{text:'イルカは鏡で自分を認識できる',isLie:false}],explanation:'イルカの皮膚は約2時間ごとに表面が入れ替わりますが、1時間ごとではありません。'},
+        {title:'ハチの驚異の世界',facts:[{text:'ミツバチは踊りで仲間に花の場所を伝える',isLie:false},{text:'女王蜂は1日に2000個の卵を産む',isLie:false},{text:'ハチは紫外線が見える',isLie:false},{text:'ハチは夜でも活発に飛び回る',isLie:true}],explanation:'ハチは基本的に日中に活動し、夜は巣で休みます。目の構造上、暗い場所での飛行は苦手です。'}
+      ],
+      '宇宙': [
+        {title:'太陽系の秘密',facts:[{text:'木星には地球が1300個入る',isLie:false},{text:'金星の1日は1年より長い',isLie:false},{text:'土星の環は氷でできている',isLie:false},{text:'火星の夕日は青く見える',isLie:false}],explanation:'実はすべて本当です！火星の大気は薄く、塵が赤い光を散乱させるため夕日が青く見えます。'},
+        {title:'宇宙の不思議',facts:[{text:'宇宙には音が伝わらない',isLie:false},{text:'月は毎年3.8cm地球から遠ざかっている',isLie:false},{text:'太陽の光は地球に届くまで8分かかる',isLie:false},{text:'宇宙空間の温度は常に-100度である',isLie:true}],explanation:'宇宙空間の温度は場所によって大きく異なり、太陽光の当たる場所は+120度以上、影は-150度以下になります。'}
+      ],
+      '偉人': [
+        {title:'織田信長の意外な一面',facts:[{text:'信長は相撲大会を開催した',isLie:false},{text:'信長は南蛮文化に興味を持ち西洋甲冑を着た',isLie:false},{text:'信長は家臣にあだ名をつけるのが好きだった',isLie:false},{text:'信長は生涯で100以上の城を建てた',isLie:true}],explanation:'信長が直接関わった城は安土城など数城程度です。100以上は誇張された数字です。'},
+        {title:'アインシュタインの秘密',facts:[{text:'アインシュタインは学校の成績が悪かったわけではない',isLie:false},{text:'アインシュタインはバイオリンを弾いた',isLie:false},{text:'アインシュタインの脳は一般人より小さかった',isLie:false},{text:'アインシュタインは水泳が得意だった',isLie:true}],explanation:'アインシュタインは実は泳げませんでした。水を怖がっていたと言われています。'}
+      ],
+      '地理': [
+        {title:'世界の不思議な国境',facts:[{text:'バチカン市国は世界最小の国である',isLie:false},{text:'ロシアは11のタイムゾーンを持つ',isLie:false},{text:'エベレストは毎年約4mm高くなっている',isLie:false},{text:'サハラ砂漠は南極より乾燥している',isLie:true}],explanation:'南極は地球上で最も乾燥した大陸で、年間降水量はサハラ砂漠より少ないです。'}
+      ],
+      '科学': [
+        {title:'化学の不思議',facts:[{text:'金は食べても無害である',isLie:false},{text:'ガラスは液体である',isLie:false},{text:'ダイヤモンドは燃える',isLie:false},{text:'水は電気を通さない',isLie:true}],explanation:'純粋な水は電気を通しにくいですが、通常の水にはイオンが含まれているため電気を通します。問題文は不正確です。'}
+      ],
+      '人体': [
+        {title:'人体の驚異',facts:[{text:'人間の骨は鉄より強い',isLie:false},{text:'舌の味覚マップは実は嘘',isLie:false},{text:'人間は毎日約1.5リットルの唾液を分泌する',isLie:false},{text:'人間の脳は10%しか使われていない',isLie:true}],explanation:'脳の10%神話は完全な誤りです。脳のすべての部分が異なる機能を担っており、常に活動しています。'}
+      ],
+      '古代文明': [
+        {title:'ピラミッドの謎',facts:[{text:'ギザの大ピラミッドは元々白く輝いていた',isLie:false},{text:'ピラミッド内部の温度は常に20度',isLie:false},{text:'大ピラミッドの建設には20年以上かかった',isLie:false},{text:'ピラミッドは奴隷によって建てられた',isLie:true}],explanation:'近年の研究で、ピラミッドは給料をもらった労働者によって建設されたことがわかっています。'}
+      ],
+      '日本史': [
+        {title:'江戸時代の暮らし',facts:[{text:'江戸の人口は100万人を超えていた',isLie:false},{text:'寿司は江戸時代のファストフードだった',isLie:false},{text:'江戸時代にもリサイクル業者がいた',isLie:false},{text:'江戸時代の平均寿命は30歳だった',isLie:true}],explanation:'江戸時代の平均寿命が低いのは乳児死亡率が高かったためで、成人すれば60歳以上生きる人も多くいました。'}
+      ]
     };
     
     const gradeInfo = {
@@ -1698,6 +1755,44 @@
     }
     
     function hideNgAlert() { document.getElementById('ngAlert').classList.remove('show'); }
+
+    // ===== 設定 =====
+    function showSettings() {
+      document.getElementById('settingsModal').style.display = 'flex';
+      document.getElementById('apiKeyInput').value = state.apiKey;
+      updateModeStatus();
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function saveSettings() {
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      state.apiKey = apiKey;
+      state.useOfflineMode = !apiKey;
+      if (apiKey) {
+        localStorage.setItem('anthropic_api_key', apiKey);
+      } else {
+        localStorage.removeItem('anthropic_api_key');
+      }
+      updateModeStatus();
+      closeSettings();
+      alert(apiKey ? '✅ APIキーを保存しました！' : '📴 オフラインモードに設定しました');
+    }
+
+    function updateModeStatus() {
+      const el = document.getElementById('modeStatus');
+      if (state.apiKey) {
+        el.textContent = '🌐 オンラインモード（API使用）';
+        el.style.background = 'rgba(99, 102, 241, 0.1)';
+        el.style.color = '#6366f1';
+      } else {
+        el.textContent = '📴 オフラインモード（ローカルクイズ）';
+        el.style.background = 'rgba(34, 197, 94, 0.1)';
+        el.style.color = '#22c55e';
+      }
+    }
     
     // ===== AI QUIZ =====
     async function startAIQuiz() {
@@ -1721,7 +1816,20 @@
       }
     }
     
+    // オフラインクイズを取得
+    function getOfflineQuiz(topic) {
+      const quizzes = offlineQuizzes[topic] || offlineQuizzes['生き物'];
+      const quiz = quizzes[Math.floor(Math.random() * quizzes.length)];
+      return { ...quiz, facts: [...quiz.facts].sort(() => Math.random() - 0.5) };
+    }
+
     async function generateQuiz(topic, diff, grade) {
+      // APIキーがない場合はオフラインモード
+      if (!state.apiKey) {
+        console.log('📴 オフラインモード: ローカルクイズを使用');
+        return getOfflineQuiz(topic);
+      }
+
       const gradeLabel = gradeInfo[grade].label;
       const diffPrompts = {
         easy:'ウソは明らかに間違っているもの',
@@ -1729,7 +1837,7 @@
         hard:'ウソは非常に紛らわしく本当っぽいもの',
         nightmare:'ウソは極めて巧妙で専門家でも迷うもの'
       };
-      
+
       const prompt = `あなたは「FAKE or FACT」クイズゲームのAIです。${gradeLabel}向けのクイズを作成してください。
 
 トピック: ${topic}
@@ -1746,17 +1854,33 @@
 4. 「へぇ〜！」と思える内容
 5. 有効なJSONのみ出力`;
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
-      });
-      const data = await res.json();
-      const match = data.content[0].text.match(/\{[\s\S]*\}/);
-      if(!match) throw new Error('Invalid response');
-      const quiz = JSON.parse(match[0]);
-      quiz.facts = quiz.facts.sort(() => Math.random() - 0.5);
-      return quiz;
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': state.apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+        });
+
+        if (!res.ok) {
+          console.warn('API エラー、オフラインモードにフォールバック');
+          return getOfflineQuiz(topic);
+        }
+
+        const data = await res.json();
+        const match = data.content[0].text.match(/\{[\s\S]*\}/);
+        if(!match) throw new Error('Invalid response');
+        const quiz = JSON.parse(match[0]);
+        quiz.facts = quiz.facts.sort(() => Math.random() - 0.5);
+        return quiz;
+      } catch(e) {
+        console.warn('API呼び出し失敗、オフラインモードにフォールバック:', e);
+        return getOfflineQuiz(topic);
+      }
     }
     
     function renderQuiz() {
