@@ -1100,6 +1100,50 @@
     .answer-btn.correct { animation: correctPulse 0.5s ease; }
     .answer-btn.wrong { animation: wrongPulse 0.5s ease; }
 
+    /* ===== ROOM CREATION ===== */
+    .wolf-room-section { margin-bottom: 24px; }
+    .wolf-room-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; text-align: center; color: #a78bfa; }
+    .wolf-room-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .wolf-room-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; text-align: center; }
+    .wolf-room-card-label { font-size: 12px; color: #888; margin-bottom: 12px; }
+    .wolf-room-counter { display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .wolf-room-counter-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; font-size: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .wolf-room-counter-btn:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.2); }
+    .wolf-room-counter-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .wolf-room-counter-value { font-family: 'Orbitron', sans-serif; font-size: 28px; font-weight: 900; min-width: 40px; }
+    .wolf-room-counter-value.human { color: #6366f1; }
+    .wolf-room-counter-value.ai { color: #ec4899; }
+    .wolf-time-options { display: flex; gap: 8px; justify-content: center; }
+    .wolf-time-btn { padding: 12px 16px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); color: #888; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .wolf-time-btn.selected { border-color: #f97316; background: rgba(249,115,22,0.15); color: #f97316; }
+    .wolf-room-total { text-align: center; padding: 16px; background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(236,72,153,0.1)); border: 1px solid rgba(139,92,246,0.2); border-radius: 12px; margin-bottom: 20px; }
+    .wolf-room-total-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+    .wolf-room-total-value { font-size: 20px; font-weight: 700; }
+    .wolf-room-total-roles { font-size: 12px; color: #aaa; margin-top: 8px; }
+    .wolf-room-error { color: #ef4444; font-size: 12px; text-align: center; margin-bottom: 12px; }
+    .wolf-human-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+    .wolf-human-badge { background: rgba(99,102,241,0.2); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .wolf-mode-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .wolf-mode-tab { flex: 1; padding: 14px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); color: #888; font-size: 13px; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .wolf-mode-tab.selected { border-color: #8b5cf6; background: rgba(139,92,246,0.15); color: #a78bfa; }
+    .wolf-mode-tab .mode-icon { font-size: 20px; margin-bottom: 4px; }
+    .wolf-multiplayer-section { display: none; }
+    .wolf-multiplayer-section.active { display: block; }
+    .wolf-solo-section { display: none; }
+    .wolf-solo-section.active { display: block; }
+
+    /* Human player role reveal */
+    .wolf-player-select { text-align: center; padding: 24px 0; }
+    .wolf-player-select-title { font-size: 16px; color: #888; margin-bottom: 16px; }
+    .wolf-player-select-name { font-size: 28px; font-weight: 900; color: #6366f1; margin-bottom: 8px; }
+    .wolf-player-select-hint { font-size: 14px; color: #666; margin-bottom: 24px; }
+    .wolf-player-confirm-btn { width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 18px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .wolf-hide-screen { background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+    .wolf-hide-icon { font-size: 64px; margin-bottom: 16px; }
+    .wolf-hide-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .wolf-hide-text { font-size: 14px; color: #888; margin-bottom: 24px; }
+    .wolf-hide-btn { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; border: none; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 600px) {
       .hero-logo .text { font-size: 36px; }
@@ -1470,7 +1514,7 @@
         <h1 class="werewolf-title">AI <span class="highlight">人狼</span></h1>
         <p class="werewolf-subtitle">AIに紛れた「人狼」を見抜け！</p>
         <div class="werewolf-badge">🎮 ミニゲーム</div>
-        
+
         <div class="wolf-vs-box">
           <div class="wolf-vs-side">
             <div class="wolf-vs-avatar human">👤</div>
@@ -1484,34 +1528,124 @@
             <div class="wolf-vs-score ai" id="wolfAiWins">0</div>
           </div>
         </div>
-        
-        <div class="werewolf-rules">
-          <div class="werewolf-rules-title">📜 ルール</div>
-          <ul class="werewolf-rules-list">
-            <li>☀️ 昼：45秒の議論タイム</li>
-            <li>🗳️ 投票：1人を処刑</li>
-            <li>🌙 夜：人狼が1人を襲撃</li>
-            <li>🎯 人狼を全滅させれば勝利！</li>
-          </ul>
+
+        <!-- Mode Selection -->
+        <div class="wolf-mode-tabs">
+          <button class="wolf-mode-tab selected" data-mode="solo" onclick="selectWolfMode(this)">
+            <div class="mode-icon">👤</div>
+            一人でプレイ
+          </button>
+          <button class="wolf-mode-tab" data-mode="multiplayer" onclick="selectWolfMode(this)">
+            <div class="mode-icon">👥</div>
+            みんなでプレイ
+          </button>
         </div>
-        
-        <div class="werewolf-section-label">👥 人数</div>
-        <div class="werewolf-count">
-          <button class="wolf-count-btn selected" data-count="5" onclick="selectWolfCount(this)">5人</button>
-          <button class="wolf-count-btn" data-count="6" onclick="selectWolfCount(this)">6人</button>
-          <button class="wolf-count-btn" data-count="7" onclick="selectWolfCount(this)">7人</button>
-          <button class="wolf-count-btn" data-count="8" onclick="selectWolfCount(this)">8人</button>
+
+        <!-- Solo Mode Section -->
+        <div class="wolf-solo-section active" id="wolfSoloSection">
+          <div class="werewolf-rules">
+            <div class="werewolf-rules-title">📜 ルール</div>
+            <ul class="werewolf-rules-list">
+              <li>☀️ 昼：議論タイム</li>
+              <li>🗳️ 投票：1人を処刑</li>
+              <li>🌙 夜：人狼が1人を襲撃</li>
+              <li>🎯 人狼を全滅させれば勝利！</li>
+            </ul>
+          </div>
+
+          <div class="werewolf-section-label">👥 人数</div>
+          <div class="werewolf-count">
+            <button class="wolf-count-btn selected" data-count="5" onclick="selectWolfCount(this)">5人</button>
+            <button class="wolf-count-btn" data-count="6" onclick="selectWolfCount(this)">6人</button>
+            <button class="wolf-count-btn" data-count="7" onclick="selectWolfCount(this)">7人</button>
+            <button class="wolf-count-btn" data-count="8" onclick="selectWolfCount(this)">8人</button>
+          </div>
+          <div class="werewolf-role-preview" id="rolePreview">🐺×1 🧑‍🌾×3</div>
+
+          <div class="werewolf-section-label">⚙️ 難易度</div>
+          <div class="werewolf-diff">
+            <button class="wolf-diff-btn selected" data-diff="easy" onclick="selectWolfDiff(this)">EASY</button>
+            <button class="wolf-diff-btn" data-diff="normal" onclick="selectWolfDiff(this)">NORMAL</button>
+            <button class="wolf-diff-btn" data-diff="hard" onclick="selectWolfDiff(this)">HARD</button>
+          </div>
+
+          <div class="werewolf-section-label">⏱️ ターン時間</div>
+          <div class="wolf-time-options">
+            <button class="wolf-time-btn" data-time="30" onclick="selectTurnTime(this)">30秒</button>
+            <button class="wolf-time-btn selected" data-time="45" onclick="selectTurnTime(this)">45秒</button>
+            <button class="wolf-time-btn" data-time="60" onclick="selectTurnTime(this)">60秒</button>
+            <button class="wolf-time-btn" data-time="90" onclick="selectTurnTime(this)">90秒</button>
+          </div>
+
+          <button class="werewolf-start-btn" onclick="startWerewolf()" style="margin-top: 20px;">🐺 ゲーム開始</button>
         </div>
-        <div class="werewolf-role-preview" id="rolePreview">🐺×1 🧑‍🌾×3</div>
-        
-        <div class="werewolf-section-label">⚙️ 難易度</div>
-        <div class="werewolf-diff">
-          <button class="wolf-diff-btn selected" data-diff="easy" onclick="selectWolfDiff(this)">EASY</button>
-          <button class="wolf-diff-btn" data-diff="normal" onclick="selectWolfDiff(this)">NORMAL</button>
-          <button class="wolf-diff-btn" data-diff="hard" onclick="selectWolfDiff(this)">HARD</button>
+
+        <!-- Multiplayer Mode Section -->
+        <div class="wolf-multiplayer-section" id="wolfMultiplayerSection">
+          <div class="werewolf-rules">
+            <div class="werewolf-rules-title">📜 ルール</div>
+            <ul class="werewolf-rules-list">
+              <li>👥 人間プレイヤーとAIを混ぜてプレイ</li>
+              <li>📱 1台の端末で順番に確認</li>
+              <li>🤫 役職は秘密！他の人に見せないで</li>
+              <li>🎯 協力して人狼を見つけよう！</li>
+            </ul>
+          </div>
+
+          <div class="wolf-room-grid">
+            <div class="wolf-room-card">
+              <div class="wolf-room-card-label">👤 人間プレイヤー</div>
+              <div class="wolf-room-counter">
+                <button class="wolf-room-counter-btn" onclick="adjustHumanCount(-1)">−</button>
+                <span class="wolf-room-counter-value human" id="humanCountValue">2</span>
+                <button class="wolf-room-counter-btn" onclick="adjustHumanCount(1)">+</button>
+              </div>
+            </div>
+            <div class="wolf-room-card">
+              <div class="wolf-room-card-label">🤖 AIプレイヤー</div>
+              <div class="wolf-room-counter">
+                <button class="wolf-room-counter-btn" onclick="adjustAICount(-1)">−</button>
+                <span class="wolf-room-counter-value ai" id="aiCountValue">3</span>
+                <button class="wolf-room-counter-btn" onclick="adjustAICount(1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="wolf-room-total" id="wolfRoomTotal">
+            <div class="wolf-room-total-label">参加者合計</div>
+            <div class="wolf-room-total-value"><span id="totalPlayerCount">5</span>人</div>
+            <div class="wolf-room-total-roles" id="multiplayerRolePreview">🐺×1 🧑‍🌾×3 🔮×0 🛡️×0</div>
+          </div>
+
+          <div class="wolf-room-error" id="roomError" style="display: none;"></div>
+
+          <div class="werewolf-section-label">⚙️ 難易度</div>
+          <div class="werewolf-diff">
+            <button class="wolf-diff-btn selected" data-diff="easy" onclick="selectWolfDiffMulti(this)">EASY</button>
+            <button class="wolf-diff-btn" data-diff="normal" onclick="selectWolfDiffMulti(this)">NORMAL</button>
+            <button class="wolf-diff-btn" data-diff="hard" onclick="selectWolfDiffMulti(this)">HARD</button>
+          </div>
+
+          <div class="werewolf-section-label">⏱️ ターン時間</div>
+          <div class="wolf-time-options">
+            <button class="wolf-time-btn" data-time="30" onclick="selectTurnTimeMulti(this)">30秒</button>
+            <button class="wolf-time-btn selected" data-time="45" onclick="selectTurnTimeMulti(this)">45秒</button>
+            <button class="wolf-time-btn" data-time="60" onclick="selectTurnTimeMulti(this)">60秒</button>
+            <button class="wolf-time-btn" data-time="90" onclick="selectTurnTimeMulti(this)">90秒</button>
+          </div>
+
+          <button class="werewolf-start-btn" onclick="startMultiplayerWerewolf()" style="margin-top: 20px;">🎮 ルームを作成</button>
         </div>
-        
-        <button class="werewolf-start-btn" onclick="startWerewolf()">🐺 ゲーム開始</button>
+      </div>
+    </div>
+
+    <!-- ===== WEREWOLF PLAYER TURN SCREEN ===== -->
+    <div class="screen" id="werewolfPlayerTurnScreen">
+      <div class="wolf-hide-screen">
+        <div class="wolf-hide-icon">🙈</div>
+        <div class="wolf-hide-title" id="wolfPlayerTurnTitle">プレイヤー1の番</div>
+        <div class="wolf-hide-text">他の人は見ないでね！<br>準備ができたらボタンを押してね</div>
+        <button class="wolf-hide-btn" onclick="showPlayerRole()">役職を見る</button>
       </div>
     </div>
     
@@ -2257,14 +2391,22 @@
       // 設定
       difficulty: 'easy',
       playerCount: 5,
-      
+      turnTime: 45,  // ターン時間（秒）
+
+      // マルチプレイヤー設定
+      isMultiplayer: false,
+      humanPlayerCount: 1,  // 人間プレイヤーの数
+      aiPlayerCount: 4,     // AIプレイヤーの数
+      humanPlayers: [],     // 人間プレイヤー配列 { id, name, role, isAlive }
+      currentHumanIndex: 0, // 現在の人間プレイヤーインデックス
+
       // ゲーム状態
       phase: 'setup', // setup, night, day, vote, result, gameover
       dayCount: 1,
-      
+
       // プレイヤー管理
-      players: [], // { char, role, isAlive }
-      
+      players: [], // { char, role, isAlive, isHuman, humanId }
+
       // 夜のアクション
       nightActions: {
         killTarget: null,      // 人狼の襲撃対象
@@ -2272,32 +2414,32 @@
         divineTarget: null,    // 占い師の占い対象
         divineResult: null     // 占い結果
       },
-      
+
       // 投票
       votes: {},
       selectedVote: null,
       selectedAttack: null,  // 人狼プレイヤーの襲撃選択
-      
+
       // タイマー
       timeLeft: 20,
       timer: null,
-      
+
       // 議論
       currentTopic: '',
       usedTopics: [],
       turn: 1,
       maxTurns: 1,  // 1ターンのみ
-      
+
       // スコア
       humanWins: 0,
       aiWins: 0,
-      
+
       // 結果
       lastKilled: null,
       lastExecuted: null,
       winResult: null, // 'village', 'wolf', null
-      
-      // プレイヤー（あなた）の情報
+
+      // プレイヤー（あなた）の情報（ソロモード用）
       playerRole: null,  // プレイヤーの役職
       playerTeam: null   // プレイヤーの陣営
     };
@@ -2360,32 +2502,68 @@
     function getAlivePlayers() {
       return wolfGame.players.filter(p => p.isAlive);
     }
-    
+
     function getAlivePlayersByRole(roleId) {
       return wolfGame.players.filter(p => p.isAlive && p.role === roleId);
     }
-    
+
     function getAlivePlayersByTeam(team) {
       return wolfGame.players.filter(p => p.isAlive && wolfRoles[p.role].team === team);
     }
-    
+
+    // マルチプレイヤー用：全プレイヤー（人間+AI）の生存者
+    function getAllAlivePlayers() {
+      const aiAlive = wolfGame.players.filter(p => p.isAlive);
+      if (wolfGame.isMultiplayer) {
+        const humanAlive = wolfGame.humanPlayers.filter(p => p.isAlive);
+        return [...humanAlive, ...aiAlive];
+      }
+      return aiAlive;
+    }
+
+    function getAllAliveByTeam(team) {
+      const aiAlive = wolfGame.players.filter(p => p.isAlive && wolfRoles[p.role].team === team);
+      if (wolfGame.isMultiplayer) {
+        const humanAlive = wolfGame.humanPlayers.filter(p => p.isAlive && wolfRoles[p.role].team === team);
+        return [...humanAlive, ...aiAlive];
+      }
+      return aiAlive;
+    }
+
     // 勝利判定
     function checkWinCondition() {
-      const aliveWolves = getAlivePlayersByTeam('wolf');
-      const aliveVillagers = getAlivePlayersByTeam('village');
-      
+      // マルチプレイヤーモードの場合、人間プレイヤーも含める
+      let aliveWolvesCount, aliveVillagersCount;
+
+      if (wolfGame.isMultiplayer) {
+        const aiWolves = wolfGame.players.filter(p => p.isAlive && p.role === 'werewolf').length;
+        const humanWolves = wolfGame.humanPlayers.filter(p => p.isAlive && p.role === 'werewolf').length;
+        aliveWolvesCount = aiWolves + humanWolves;
+
+        const aiVillagers = wolfGame.players.filter(p => p.isAlive && wolfRoles[p.role].team === 'village').length;
+        const humanVillagers = wolfGame.humanPlayers.filter(p => p.isAlive && wolfRoles[p.role].team === 'village').length;
+        aliveVillagersCount = aiVillagers + humanVillagers;
+      } else {
+        // ソロモード
+        const aliveWolves = getAlivePlayersByTeam('wolf');
+        const aliveVillagers = getAlivePlayersByTeam('village');
+        // プレイヤー自身も考慮
+        aliveWolvesCount = aliveWolves.length + (wolfGame.playerTeam === 'wolf' ? 1 : 0);
+        aliveVillagersCount = aliveVillagers.length + (wolfGame.playerTeam === 'village' ? 1 : 0);
+      }
+
       // 人狼全滅 → 村人勝利
-      if (aliveWolves.length === 0) {
+      if (aliveWolvesCount === 0) {
         wolfGame.winResult = 'village';
         return true;
       }
-      
+
       // 人狼 >= 村人 → 人狼勝利
-      if (aliveWolves.length >= aliveVillagers.length) {
+      if (aliveWolvesCount >= aliveVillagersCount) {
         wolfGame.winResult = 'wolf';
         return true;
       }
-      
+
       return false;
     }
     
@@ -2568,12 +2746,272 @@
       if (config.bodyguard > 0) preview += ` 🛡️×${config.bodyguard}`;
       document.getElementById('rolePreview').textContent = preview;
     }
-    
+
+    // ============================================================
+    // モード選択・マルチプレイヤー設定
+    // ============================================================
+
+    function selectWolfMode(el) {
+      document.querySelectorAll('.wolf-mode-tab').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      const mode = el.dataset.mode;
+
+      document.getElementById('wolfSoloSection').classList.toggle('active', mode === 'solo');
+      document.getElementById('wolfMultiplayerSection').classList.toggle('active', mode === 'multiplayer');
+    }
+
+    function selectTurnTime(el) {
+      document.querySelectorAll('#wolfSoloSection .wolf-time-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      wolfGame.turnTime = parseInt(el.dataset.time);
+    }
+
+    function selectTurnTimeMulti(el) {
+      document.querySelectorAll('#wolfMultiplayerSection .wolf-time-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      wolfGame.turnTime = parseInt(el.dataset.time);
+    }
+
+    function selectWolfDiffMulti(el) {
+      document.querySelectorAll('#wolfMultiplayerSection .wolf-diff-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      wolfGame.difficulty = el.dataset.diff;
+    }
+
+    function adjustHumanCount(delta) {
+      const newCount = wolfGame.humanPlayerCount + delta;
+      const minHumans = 1;
+      const maxHumans = 6;
+      const minTotal = 4;
+      const maxTotal = 8;
+
+      if (newCount < minHumans || newCount > maxHumans) return;
+
+      const total = newCount + wolfGame.aiPlayerCount;
+      if (total < minTotal || total > maxTotal) return;
+
+      wolfGame.humanPlayerCount = newCount;
+      updateMultiplayerUI();
+    }
+
+    function adjustAICount(delta) {
+      const newCount = wolfGame.aiPlayerCount + delta;
+      const minAI = 0;
+      const maxAI = 7;
+      const minTotal = 4;
+      const maxTotal = 8;
+
+      if (newCount < minAI || newCount > maxAI) return;
+
+      const total = wolfGame.humanPlayerCount + newCount;
+      if (total < minTotal || total > maxTotal) return;
+
+      wolfGame.aiPlayerCount = newCount;
+      updateMultiplayerUI();
+    }
+
+    function updateMultiplayerUI() {
+      document.getElementById('humanCountValue').textContent = wolfGame.humanPlayerCount;
+      document.getElementById('aiCountValue').textContent = wolfGame.aiPlayerCount;
+
+      const total = wolfGame.humanPlayerCount + wolfGame.aiPlayerCount;
+      document.getElementById('totalPlayerCount').textContent = total;
+
+      // ロールプレビュー更新
+      const config = getMultiplayerConfig(total);
+      const villagerCount = total - config.werewolves - config.seer - config.bodyguard;
+      let preview = `🐺×${config.werewolves} 🧑‍🌾×${villagerCount}`;
+      if (config.seer > 0) preview += ` 🔮×${config.seer}`;
+      if (config.bodyguard > 0) preview += ` 🛡️×${config.bodyguard}`;
+      document.getElementById('multiplayerRolePreview').textContent = preview;
+
+      // エラーチェック
+      const errorEl = document.getElementById('roomError');
+      if (total < 4) {
+        errorEl.textContent = '最低4人必要です';
+        errorEl.style.display = 'block';
+      } else if (total > 8) {
+        errorEl.textContent = '最大8人までです';
+        errorEl.style.display = 'block';
+      } else {
+        errorEl.style.display = 'none';
+      }
+    }
+
+    function getMultiplayerConfig(total) {
+      // 人数に応じた役職設定
+      const configs = {
+        4: { werewolves: 1, seer: 0, bodyguard: 0 },
+        5: { werewolves: 1, seer: 0, bodyguard: 0 },
+        6: { werewolves: 1, seer: 1, bodyguard: 0 },
+        7: { werewolves: 2, seer: 1, bodyguard: 0 },
+        8: { werewolves: 2, seer: 1, bodyguard: 1 }
+      };
+      return configs[total] || configs[5];
+    }
+
+    // ============================================================
+    // マルチプレイヤーゲーム開始
+    // ============================================================
+
+    function startMultiplayerWerewolf() {
+      const total = wolfGame.humanPlayerCount + wolfGame.aiPlayerCount;
+      if (total < 4 || total > 8) {
+        showToast('4〜8人で設定してください');
+        return;
+      }
+
+      wolfGame.isMultiplayer = true;
+      wolfGame.playerCount = total;
+      initMultiplayerGame();
+      startPlayerTurnReveal();
+    }
+
+    function initMultiplayerGame() {
+      const total = wolfGame.playerCount;
+      const config = getMultiplayerConfig(total);
+      const numAI = wolfGame.aiPlayerCount;
+      const numHumans = wolfGame.humanPlayerCount;
+
+      // 役職を作成
+      let roles = [];
+      for (let i = 0; i < config.werewolves; i++) roles.push('werewolf');
+      for (let i = 0; i < config.seer; i++) roles.push('seer');
+      for (let i = 0; i < config.bodyguard; i++) roles.push('bodyguard');
+      while (roles.length < total) roles.push('villager');
+
+      // 役職をシャッフル
+      roles = roles.sort(() => Math.random() - 0.5);
+
+      // 人間プレイヤーを作成
+      wolfGame.humanPlayers = [];
+      for (let i = 0; i < numHumans; i++) {
+        wolfGame.humanPlayers.push({
+          id: `human_${i}`,
+          name: `プレイヤー${i + 1}`,
+          role: roles.pop(),
+          isAlive: true
+        });
+      }
+
+      // AIプレイヤーを作成
+      const shuffledChars = [...wolfCharacters].sort(() => Math.random() - 0.5);
+      const selectedChars = shuffledChars.slice(0, numAI);
+
+      wolfGame.players = selectedChars.map((char, i) => ({
+        char: char,
+        role: roles[i],
+        isAlive: true,
+        isHuman: false,
+        humanId: null
+      }));
+
+      // ソロモード互換のための設定
+      wolfGame.playerRole = wolfGame.humanPlayers[0]?.role || 'villager';
+      wolfGame.playerTeam = wolfRoles[wolfGame.playerRole].team;
+
+      // 状態リセット
+      wolfGame.phase = 'night';
+      wolfGame.dayCount = 1;
+      wolfGame.turn = 1;
+      wolfGame.usedTopics = [];
+      wolfGame.nightActions = { killTarget: null, guardTarget: null, divineTarget: null, divineResult: null };
+      wolfGame.votes = {};
+      wolfGame.selectedVote = null;
+      wolfGame.lastKilled = null;
+      wolfGame.lastExecuted = null;
+      wolfGame.winResult = null;
+      wolfGame.currentHumanIndex = 0;
+
+      console.log('🎮 マルチプレイヤーゲーム初期化完了');
+      console.log('人間プレイヤー:', wolfGame.humanPlayers.map(p => `${p.name}(${wolfRoles[p.role].name})`));
+      console.log('AIプレイヤー:', wolfGame.players.map(p => `${p.char.name}(${wolfRoles[p.role].name})`));
+    }
+
+    function startPlayerTurnReveal() {
+      wolfGame.currentHumanIndex = 0;
+      showNextPlayerTurn();
+    }
+
+    function showNextPlayerTurn() {
+      if (wolfGame.currentHumanIndex >= wolfGame.humanPlayers.length) {
+        // 全員確認完了、ゲーム開始
+        showNightPhase();
+        return;
+      }
+
+      const player = wolfGame.humanPlayers[wolfGame.currentHumanIndex];
+      document.getElementById('wolfPlayerTurnTitle').textContent = `${player.name}の番`;
+      showScreen('werewolfPlayerTurnScreen');
+    }
+
+    function showPlayerRole() {
+      const player = wolfGame.humanPlayers[wolfGame.currentHumanIndex];
+      const role = wolfRoles[player.role];
+
+      document.getElementById('wolfPlayerRoleIcon').textContent = role.icon;
+      document.getElementById('wolfPlayerRoleName').textContent = role.name;
+      document.getElementById('wolfPlayerRoleName').className = `wolf-role-reveal-name ${role.team === 'wolf' ? 'wolf' : 'village'}`;
+      document.getElementById('wolfPlayerTeam').textContent = role.team === 'wolf' ? '人狼陣営' : '村人陣営';
+      document.getElementById('wolfPlayerTeam').className = `wolf-role-reveal-team ${role.team === 'wolf' ? 'wolf' : 'village'}`;
+
+      // ミッション設定
+      let mission = '議論で人狼を見抜き、投票で処刑せよ';
+      let desc = '人狼を見つけて処刑しよう！';
+      if (player.role === 'werewolf') {
+        mission = '村人を襲撃し、村人陣営と同数まで減らせ';
+        desc = '正体を隠して村人を騙せ！';
+      } else if (player.role === 'seer') {
+        mission = '毎晩1人を占い、人狼を見つけ出せ';
+        desc = '占いの力で人狼を暴け！';
+      } else if (player.role === 'bodyguard') {
+        mission = '毎晩1人を守り、襲撃から護れ';
+        desc = '仲間を守り抜け！';
+      }
+      document.getElementById('wolfPlayerRoleDesc').textContent = desc;
+      document.getElementById('wolfMissionText').textContent = mission;
+
+      // 人狼の場合、仲間を表示
+      const alliesSection = document.getElementById('wolfAlliesSection');
+      if (player.role === 'werewolf') {
+        const otherWolves = wolfGame.humanPlayers.filter(p => p.role === 'werewolf' && p.id !== player.id);
+        const aiWolves = wolfGame.players.filter(p => p.role === 'werewolf');
+        const allies = [...otherWolves.map(p => ({ name: p.name, avatar: '👤' })), ...aiWolves.map(p => ({ name: p.char.name, avatar: p.char.avatar }))];
+
+        if (allies.length > 0) {
+          alliesSection.style.display = 'block';
+          document.getElementById('wolfAlliesList').innerHTML = allies.map(a =>
+            `<div class="wolf-ally-card"><div class="wolf-ally-avatar">${a.avatar}</div><div class="wolf-ally-name">${a.name}</div></div>`
+          ).join('');
+        } else {
+          alliesSection.style.display = 'none';
+        }
+      } else {
+        alliesSection.style.display = 'none';
+      }
+
+      // ボタンのテキストを変更
+      const revealBtn = document.querySelector('.wolf-role-reveal-btn');
+      revealBtn.textContent = wolfGame.currentHumanIndex < wolfGame.humanPlayers.length - 1 ? '確認して次の人へ' : '議論を始める';
+      revealBtn.onclick = function() {
+        wolfGame.currentHumanIndex++;
+        if (wolfGame.currentHumanIndex < wolfGame.humanPlayers.length) {
+          showNextPlayerTurn();
+        } else {
+          startDayDiscussion();
+        }
+      };
+
+      showScreen('werewolfRoleScreen');
+    }
+
     // ============================================================
     // メインゲームフロー
     // ============================================================
-    
+
     function startWerewolf() {
+      wolfGame.isMultiplayer = false;
+      wolfGame.humanPlayerCount = 1;
       initWolfGame();
       showRoleReveal();
     }
@@ -2783,8 +3221,8 @@
       // 生存者バーを更新
       updateSurvivorsBar();
       
-      // タイマー開始（45秒）
-      wolfGame.timeLeft = 45;
+      // タイマー開始
+      wolfGame.timeLeft = wolfGame.turnTime;
       updateWolfTimer();
       if (wolfGame.timer) clearInterval(wolfGame.timer);
       wolfGame.timer = setInterval(wolfTick, 1000);
@@ -2819,8 +3257,19 @@
     
     function updateSurvivorsBar() {
       const container = document.getElementById('wolfSurvivorsBar');
-      // プレイヤー（あなた）を最初に表示
-      let html = `<div class="wolf-survivor-icon you-icon" title="あなた">👤</div>`;
+      let html = '';
+
+      // マルチプレイヤーモードの場合
+      if (wolfGame.isMultiplayer) {
+        // 人間プレイヤーを表示
+        html += wolfGame.humanPlayers.map((p, i) => `
+          <div class="wolf-survivor-icon you-icon ${p.isAlive ? '' : 'dead'}" title="${p.name}">👤</div>
+        `).join('');
+      } else {
+        // ソロモード：プレイヤー（あなた）を最初に表示
+        html = `<div class="wolf-survivor-icon you-icon" title="あなた">👤</div>`;
+      }
+
       // AIプレイヤー
       html += wolfGame.players.map(p => `
         <div class="wolf-survivor-icon ${p.char.color} ${p.isAlive ? '' : 'dead'}" title="${p.char.name}">${p.char.avatar}</div>
@@ -3237,9 +3686,19 @@ ${roleHint}
     
     function showGameResult() {
       const isVillageWin = wolfGame.winResult === 'village';
-      const playerWon = (wolfGame.playerTeam === 'village' && isVillageWin) || 
-                        (wolfGame.playerTeam === 'wolf' && !isVillageWin);
-      
+
+      // マルチプレイヤーモードかどうかで判定方法を変える
+      let playerWon;
+      if (wolfGame.isMultiplayer) {
+        // マルチプレイヤー: 村人陣営の人間プレイヤーが1人でも勝てば勝利扱い
+        const hasHumanVillager = wolfGame.humanPlayers.some(p => wolfRoles[p.role].team === 'village');
+        const hasHumanWolf = wolfGame.humanPlayers.some(p => p.role === 'werewolf');
+        playerWon = (hasHumanVillager && isVillageWin) || (hasHumanWolf && !isVillageWin);
+      } else {
+        playerWon = (wolfGame.playerTeam === 'village' && isVillageWin) ||
+                    (wolfGame.playerTeam === 'wolf' && !isVillageWin);
+      }
+
       // スコア更新（プレイヤーが勝ったかどうか）
       if (playerWon) {
         wolfGame.humanWins++;
@@ -3247,43 +3706,52 @@ ${roleHint}
         wolfGame.aiWins++;
       }
       updateWolfScore();
-      
+
       // 結果画面
       const icon = document.getElementById('wolfResultIcon');
       const title = document.getElementById('wolfResultTitle');
       const subtitle = document.getElementById('wolfResultSubtitle');
-      
-      const playerRoleInfo = wolfRoles[wolfGame.playerRole];
-      
-      if (playerWon) {
+
+      if (isVillageWin) {
         icon.textContent = '🎉';
-        title.textContent = '勝利！';
+        title.textContent = '村人陣営の勝利！';
         title.className = 'wolf-result-title win';
-        if (wolfGame.playerTeam === 'wolf') {
-          subtitle.textContent = `${playerRoleInfo.icon} ${playerRoleInfo.name}として村を支配した！`;
-        } else {
-          subtitle.textContent = `${playerRoleInfo.icon} ${playerRoleInfo.name}として人狼を全滅させた！`;
-        }
+        subtitle.textContent = '人狼を全員処刑した！';
       } else {
-        icon.textContent = '💀';
-        title.textContent = '敗北...';
+        icon.textContent = '🐺';
+        title.textContent = '人狼陣営の勝利！';
         title.className = 'wolf-result-title lose';
-        if (wolfGame.playerTeam === 'wolf') {
-          subtitle.textContent = `${playerRoleInfo.icon} ${playerRoleInfo.name}だったが人狼が全滅...`;
-        } else {
-          subtitle.textContent = `${playerRoleInfo.icon} ${playerRoleInfo.name}だったが村が滅びた...`;
-        }
+        subtitle.textContent = '村が人狼に支配された...';
       }
-      
-      // プレイヤーの役職を最初に表示
-      let cardsHtml = `
-        <div class="wolf-result-card ${wolfGame.playerTeam === 'wolf' ? 'werewolf' : ''}">
-          <div class="wolf-result-card-avatar you-icon">👤</div>
-          <div class="wolf-result-card-name">あなた</div>
-          <span class="wolf-result-card-role ${wolfGame.playerTeam === 'wolf' ? 'werewolf' : 'villager'}">${playerRoleInfo.icon} ${playerRoleInfo.name}</span>
-        </div>
-      `;
-      
+
+      // 結果カードを生成
+      let cardsHtml = '';
+
+      // マルチプレイヤーの場合は人間プレイヤーを表示
+      if (wolfGame.isMultiplayer) {
+        cardsHtml += wolfGame.humanPlayers.map((player) => {
+          const roleInfo = wolfRoles[player.role];
+          const isWolf = roleInfo.team === 'wolf';
+          return `
+            <div class="wolf-result-card ${isWolf ? 'werewolf' : ''} ${player.isAlive ? '' : 'dead'}">
+              <div class="wolf-result-card-avatar you-icon">👤${player.isAlive ? '' : '💀'}</div>
+              <div class="wolf-result-card-name">${player.name}</div>
+              <span class="wolf-result-card-role ${isWolf ? 'werewolf' : 'villager'}">${roleInfo.icon} ${roleInfo.name}</span>
+            </div>
+          `;
+        }).join('');
+      } else {
+        // ソロモード: プレイヤーの役職を最初に表示
+        const playerRoleInfo = wolfRoles[wolfGame.playerRole];
+        cardsHtml = `
+          <div class="wolf-result-card ${wolfGame.playerTeam === 'wolf' ? 'werewolf' : ''}">
+            <div class="wolf-result-card-avatar you-icon">👤</div>
+            <div class="wolf-result-card-name">あなた</div>
+            <span class="wolf-result-card-role ${wolfGame.playerTeam === 'wolf' ? 'werewolf' : 'villager'}">${playerRoleInfo.icon} ${playerRoleInfo.name}</span>
+          </div>
+        `;
+      }
+
       // AIプレイヤーの役職を公開
       cardsHtml += wolfGame.players.map((player) => {
         const roleInfo = wolfRoles[player.role];
@@ -3296,9 +3764,9 @@ ${roleHint}
           </div>
         `;
       }).join('');
-      
+
       document.getElementById('wolfResultCards').innerHTML = cardsHtml;
-      
+
       showScreen('werewolfResultScreen');
     }
     
@@ -3317,7 +3785,11 @@ ${roleHint}
     }
     
     function restartWerewolf() {
-      startWerewolf();
+      if (wolfGame.isMultiplayer) {
+        startMultiplayerWerewolf();
+      } else {
+        startWerewolf();
+      }
     }
     
     // ===== ユーティリティ =====
@@ -3405,6 +3877,7 @@ ${roleHint}
     // ===== INIT =====
     loadStats();
     renderFeed();
+    updateMultiplayerUI();
   </script>
 
 </body>
