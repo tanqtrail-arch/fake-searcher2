@@ -1087,6 +1087,67 @@
     @keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
     .bounce { animation: bounce 0.5s ease; }
     .shake { animation: shake 0.4s ease; }
+
+    @keyframes slideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slideInLeft { from{opacity:0;transform:translateX(-20px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes glow { 0%,100%{box-shadow:0 0 5px rgba(99,102,241,0.3)} 50%{box-shadow:0 0 20px rgba(99,102,241,0.6)} }
+    @keyframes correctPulse { 0%{box-shadow:0 0 0 rgba(34,197,94,0)} 50%{box-shadow:0 0 30px rgba(34,197,94,0.5)} 100%{box-shadow:0 0 0 rgba(34,197,94,0)} }
+    @keyframes wrongPulse { 0%{box-shadow:0 0 0 rgba(236,72,153,0)} 50%{box-shadow:0 0 30px rgba(236,72,153,0.5)} 100%{box-shadow:0 0 0 rgba(236,72,153,0)} }
+
+    .slide-in { animation: slideIn 0.3s ease-out; }
+    .slide-in-left { animation: slideInLeft 0.3s ease-out; }
+    .glow { animation: glow 2s infinite; }
+    .answer-btn.correct { animation: correctPulse 0.5s ease; }
+    .answer-btn.wrong { animation: wrongPulse 0.5s ease; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .hero-logo .text { font-size: 36px; }
+      .hero-logo .icon { font-size: 32px; }
+      .topic-grid { grid-template-columns: repeat(2, 1fr); }
+      .difficulty-grid { grid-template-columns: repeat(2, 1fr); }
+      .answer-grid { grid-template-columns: 1fr; }
+      .grade-display-label { font-size: 24px; }
+      .quiz-title { font-size: 16px; }
+      .fact-text { font-size: 13px; }
+      .result-title { font-size: 28px; }
+      .result-stats { gap: 20px; }
+      .result-stat-value { font-size: 24px; }
+      .wolf-chat-box { height: 250px; }
+      .nav-tab { padding: 8px 12px; font-size: 11px; }
+      .nav-tab .icon { font-size: 14px; }
+      .header-stats { font-size: 10px; padding: 6px 10px; }
+      .werewolf-title { font-size: 32px; }
+      .wolf-result-title { font-size: 24px; }
+    }
+
+    @media (max-width: 400px) {
+      .hero-logo .text { font-size: 28px; }
+      .logo-text { font-size: 18px; }
+      .topic-grid { gap: 6px; }
+      .topic-btn { padding: 10px 6px; }
+      .topic-btn-icon { font-size: 20px; }
+      .topic-btn-text { font-size: 10px; }
+    }
+
+    /* ===== TOAST NOTIFICATION ===== */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 300;
+      animation: slideIn 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .toast.success { border-color: #22c55e; }
+    .toast.error { border-color: #ef4444; }
   </style>
 </head>
 <body>
@@ -1103,10 +1164,33 @@
       </span>
     </div>
     </div>
-    <div class="header-stats">
-      人類 <span class="human" id="headerHuman">50%</span> vs <span class="ai-score" id="headerAI">50%</span> AI
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="header-stats">
+        人類 <span class="human" id="headerHuman">50%</span> vs <span class="ai-score" id="headerAI">50%</span> AI
+      </div>
+      <button onclick="showSettings()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#888;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:16px;">⚙️</button>
     </div>
   </header>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:200;align-items:center;justify-content:center;">
+    <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:24px;max-width:400px;width:90%;margin:20px;">
+      <h2 style="font-size:18px;margin-bottom:16px;">⚙️ 設定</h2>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:8px;">Anthropic APIキー（オプション）</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;color:#fff;font-size:14px;">
+        <p style="font-size:11px;color:#666;margin-top:8px;">※APIキーがなくてもオフラインモードでプレイできます</p>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;color:#888;margin-bottom:8px;">現在のモード</div>
+        <div id="modeStatus" style="font-size:14px;padding:10px;background:rgba(34,197,94,0.1);border-radius:8px;color:#22c55e;">📴 オフラインモード</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="saveSettings()" style="flex:1;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;padding:14px;border-radius:10px;font-weight:700;cursor:pointer;">保存</button>
+        <button onclick="closeSettings()" style="flex:1;background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1);padding:14px;border-radius:10px;font-weight:700;cursor:pointer;">閉じる</button>
+      </div>
+    </div>
+  </div>
   
   <!-- Nav Tabs -->
   <nav class="nav-tabs" id="navTabs">
@@ -1603,7 +1687,41 @@
       selectedAnswer: null,
       isHumanQuiz: false,
       currentHumanQuiz: null,
-      targetGrade: 'middle'
+      targetGrade: 'middle',
+      apiKey: localStorage.getItem('anthropic_api_key') || '',
+      useOfflineMode: !localStorage.getItem('anthropic_api_key')
+    };
+
+    // ===== オフライン用クイズデータ =====
+    const offlineQuizzes = {
+      '生き物': [
+        {title:'タコの驚くべき能力',facts:[{text:'タコには心臓が3つある',isLie:false},{text:'タコの血液は青い',isLie:false},{text:'タコは8本の腕それぞれに脳がある',isLie:false},{text:'タコは陸上で1時間呼吸できる',isLie:true}],explanation:'タコは陸上では数分程度しか生きられません。皮膚呼吸である程度酸素を取り込めますが、1時間は不可能です。'},
+        {title:'イルカの不思議な生態',facts:[{text:'イルカは片目ずつ眠ることができる',isLie:false},{text:'イルカは超音波で会話する',isLie:false},{text:'イルカの皮膚は1時間ごとに再生する',isLie:true},{text:'イルカは鏡で自分を認識できる',isLie:false}],explanation:'イルカの皮膚は約2時間ごとに表面が入れ替わりますが、1時間ごとではありません。'},
+        {title:'ハチの驚異の世界',facts:[{text:'ミツバチは踊りで仲間に花の場所を伝える',isLie:false},{text:'女王蜂は1日に2000個の卵を産む',isLie:false},{text:'ハチは紫外線が見える',isLie:false},{text:'ハチは夜でも活発に飛び回る',isLie:true}],explanation:'ハチは基本的に日中に活動し、夜は巣で休みます。目の構造上、暗い場所での飛行は苦手です。'}
+      ],
+      '宇宙': [
+        {title:'太陽系の秘密',facts:[{text:'木星には地球が1300個入る',isLie:false},{text:'金星の1日は1年より長い',isLie:false},{text:'土星の環は氷でできている',isLie:false},{text:'火星の夕日は青く見える',isLie:false}],explanation:'実はすべて本当です！火星の大気は薄く、塵が赤い光を散乱させるため夕日が青く見えます。'},
+        {title:'宇宙の不思議',facts:[{text:'宇宙には音が伝わらない',isLie:false},{text:'月は毎年3.8cm地球から遠ざかっている',isLie:false},{text:'太陽の光は地球に届くまで8分かかる',isLie:false},{text:'宇宙空間の温度は常に-100度である',isLie:true}],explanation:'宇宙空間の温度は場所によって大きく異なり、太陽光の当たる場所は+120度以上、影は-150度以下になります。'}
+      ],
+      '偉人': [
+        {title:'織田信長の意外な一面',facts:[{text:'信長は相撲大会を開催した',isLie:false},{text:'信長は南蛮文化に興味を持ち西洋甲冑を着た',isLie:false},{text:'信長は家臣にあだ名をつけるのが好きだった',isLie:false},{text:'信長は生涯で100以上の城を建てた',isLie:true}],explanation:'信長が直接関わった城は安土城など数城程度です。100以上は誇張された数字です。'},
+        {title:'アインシュタインの秘密',facts:[{text:'アインシュタインは学校の成績が悪かったわけではない',isLie:false},{text:'アインシュタインはバイオリンを弾いた',isLie:false},{text:'アインシュタインの脳は一般人より小さかった',isLie:false},{text:'アインシュタインは水泳が得意だった',isLie:true}],explanation:'アインシュタインは実は泳げませんでした。水を怖がっていたと言われています。'}
+      ],
+      '地理': [
+        {title:'世界の不思議な国境',facts:[{text:'バチカン市国は世界最小の国である',isLie:false},{text:'ロシアは11のタイムゾーンを持つ',isLie:false},{text:'エベレストは毎年約4mm高くなっている',isLie:false},{text:'サハラ砂漠は南極より乾燥している',isLie:true}],explanation:'南極は地球上で最も乾燥した大陸で、年間降水量はサハラ砂漠より少ないです。'}
+      ],
+      '科学': [
+        {title:'化学の不思議',facts:[{text:'金は食べても無害である',isLie:false},{text:'ガラスは液体である',isLie:false},{text:'ダイヤモンドは燃える',isLie:false},{text:'水は電気を通さない',isLie:true}],explanation:'純粋な水は電気を通しにくいですが、通常の水にはイオンが含まれているため電気を通します。問題文は不正確です。'}
+      ],
+      '人体': [
+        {title:'人体の驚異',facts:[{text:'人間の骨は鉄より強い',isLie:false},{text:'舌の味覚マップは実は嘘',isLie:false},{text:'人間は毎日約1.5リットルの唾液を分泌する',isLie:false},{text:'人間の脳は10%しか使われていない',isLie:true}],explanation:'脳の10%神話は完全な誤りです。脳のすべての部分が異なる機能を担っており、常に活動しています。'}
+      ],
+      '古代文明': [
+        {title:'ピラミッドの謎',facts:[{text:'ギザの大ピラミッドは元々白く輝いていた',isLie:false},{text:'ピラミッド内部の温度は常に20度',isLie:false},{text:'大ピラミッドの建設には20年以上かかった',isLie:false},{text:'ピラミッドは奴隷によって建てられた',isLie:true}],explanation:'近年の研究で、ピラミッドは給料をもらった労働者によって建設されたことがわかっています。'}
+      ],
+      '日本史': [
+        {title:'江戸時代の暮らし',facts:[{text:'江戸の人口は100万人を超えていた',isLie:false},{text:'寿司は江戸時代のファストフードだった',isLie:false},{text:'江戸時代にもリサイクル業者がいた',isLie:false},{text:'江戸時代の平均寿命は30歳だった',isLie:true}],explanation:'江戸時代の平均寿命が低いのは乳児死亡率が高かったためで、成人すれば60歳以上生きる人も多くいました。'}
+      ]
     };
     
     const gradeInfo = {
@@ -1698,6 +1816,44 @@
     }
     
     function hideNgAlert() { document.getElementById('ngAlert').classList.remove('show'); }
+
+    // ===== 設定 =====
+    function showSettings() {
+      document.getElementById('settingsModal').style.display = 'flex';
+      document.getElementById('apiKeyInput').value = state.apiKey;
+      updateModeStatus();
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function saveSettings() {
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      state.apiKey = apiKey;
+      state.useOfflineMode = !apiKey;
+      if (apiKey) {
+        localStorage.setItem('anthropic_api_key', apiKey);
+      } else {
+        localStorage.removeItem('anthropic_api_key');
+      }
+      updateModeStatus();
+      closeSettings();
+      alert(apiKey ? '✅ APIキーを保存しました！' : '📴 オフラインモードに設定しました');
+    }
+
+    function updateModeStatus() {
+      const el = document.getElementById('modeStatus');
+      if (state.apiKey) {
+        el.textContent = '🌐 オンラインモード（API使用）';
+        el.style.background = 'rgba(99, 102, 241, 0.1)';
+        el.style.color = '#6366f1';
+      } else {
+        el.textContent = '📴 オフラインモード（ローカルクイズ）';
+        el.style.background = 'rgba(34, 197, 94, 0.1)';
+        el.style.color = '#22c55e';
+      }
+    }
     
     // ===== AI QUIZ =====
     async function startAIQuiz() {
@@ -1721,7 +1877,20 @@
       }
     }
     
+    // オフラインクイズを取得
+    function getOfflineQuiz(topic) {
+      const quizzes = offlineQuizzes[topic] || offlineQuizzes['生き物'];
+      const quiz = quizzes[Math.floor(Math.random() * quizzes.length)];
+      return { ...quiz, facts: [...quiz.facts].sort(() => Math.random() - 0.5) };
+    }
+
     async function generateQuiz(topic, diff, grade) {
+      // APIキーがない場合はオフラインモード
+      if (!state.apiKey) {
+        console.log('📴 オフラインモード: ローカルクイズを使用');
+        return getOfflineQuiz(topic);
+      }
+
       const gradeLabel = gradeInfo[grade].label;
       const diffPrompts = {
         easy:'ウソは明らかに間違っているもの',
@@ -1729,7 +1898,7 @@
         hard:'ウソは非常に紛らわしく本当っぽいもの',
         nightmare:'ウソは極めて巧妙で専門家でも迷うもの'
       };
-      
+
       const prompt = `あなたは「FAKE or FACT」クイズゲームのAIです。${gradeLabel}向けのクイズを作成してください。
 
 トピック: ${topic}
@@ -1746,17 +1915,33 @@
 4. 「へぇ〜！」と思える内容
 5. 有効なJSONのみ出力`;
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
-      });
-      const data = await res.json();
-      const match = data.content[0].text.match(/\{[\s\S]*\}/);
-      if(!match) throw new Error('Invalid response');
-      const quiz = JSON.parse(match[0]);
-      quiz.facts = quiz.facts.sort(() => Math.random() - 0.5);
-      return quiz;
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': state.apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+        });
+
+        if (!res.ok) {
+          console.warn('API エラー、オフラインモードにフォールバック');
+          return getOfflineQuiz(topic);
+        }
+
+        const data = await res.json();
+        const match = data.content[0].text.match(/\{[\s\S]*\}/);
+        if(!match) throw new Error('Invalid response');
+        const quiz = JSON.parse(match[0]);
+        quiz.facts = quiz.facts.sort(() => Math.random() - 0.5);
+        return quiz;
+      } catch(e) {
+        console.warn('API呼び出し失敗、オフラインモードにフォールバック:', e);
+        return getOfflineQuiz(topic);
+      }
     }
     
     function renderQuiz() {
@@ -1785,27 +1970,39 @@
       el.classList.add('selected');
       state.selectedAnswer = parseInt(el.dataset.index);
       document.getElementById('submitAnswerBtn').disabled = false;
+      playSound('select');
     }
     
     function submitAnswer() {
       if(state.selectedAnswer === null) return;
-      
+
       const q = state.currentQuiz;
       const correct = q.facts[state.selectedAnswer].isLie;
       const correctIdx = q.facts.findIndex(f => f.isLie);
       const letters = ['A','B','C','D'];
-      
+
       document.querySelectorAll('.answer-btn').forEach(b => {
         b.classList.add('disabled');
         const idx = parseInt(b.dataset.index);
         if(q.facts[idx].isLie) b.classList.add('correct');
         else if(idx === state.selectedAnswer && !correct) b.classList.add('wrong');
       });
-      
-      if(correct) { state.humanWins++; state.streak++; }
-      else { state.aiWins++; state.streak = 0; }
-      
+
+      // サウンド再生
+      playSound(correct ? 'correct' : 'wrong');
+
+      if(correct) {
+        state.humanWins++;
+        state.streak++;
+        showToast('🎉 正解！FAKEを見抜いた！', 'success');
+      } else {
+        state.aiWins++;
+        state.streak = 0;
+        showToast('😈 AIの勝ち...騙された！', 'error');
+      }
+
       updateStats();
+      saveStats();
       setTimeout(() => showResult(correct, correctIdx, letters), 1200);
     }
     
@@ -2044,7 +2241,15 @@
       '人狼っぽい発言した人いた？',
       '自分が村人だって証明できる？',
       '誰を守りたい？',
-      '直感で怪しいのは？'
+      '直感で怪しいのは？',
+      '今一番信用できない人は？',
+      'なぜ自分は村人だと思う？',
+      '処刑されたくない理由は？',
+      '占い師いる？名乗り出て！',
+      '静かな人、何か言って！',
+      '最後に言いたいことある？',
+      '誰かの発言で気になったのは？',
+      '人狼ならどこに隠れる？'
     ];
     
     // ゲーム状態管理
@@ -2709,33 +2914,61 @@ ${roleHint}
 - 回答のみ出力`;
 
       try {
+        // APIキーがない場合はフォールバック
+        if (!state.apiKey) {
+          throw new Error('No API key');
+        }
         const res = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': state.apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
           body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 100, messages: [{ role: 'user', content: prompt }] })
         });
+        if (!res.ok) throw new Error('API error');
         const data = await res.json();
         return data.content[0].text;
       } catch (e) {
-        // フォールバック（人狼は違和感のある発言）
+        // フォールバック（キャラクター別・トピック別の応答）
+        const topicResponses = {
+          '昨日の夜、何してた？': {
+            takuya: ['普通に寝てたぜ！', 'ゲームしてたわ', 'え、なんで聞くの？'],
+            misaki: ['寝てたよ...', '本読んでた...かな', 'えっと...普通に...'],
+            kenta: ['別に、寝てただけだ', '関係ないだろ', '普通だよ'],
+            ayaka: ['まじ寝てたー', 'てか眠かったし', 'うち早寝だから'],
+            ryota: ['データの整理してたんだよね', '考え事してた', 'まあ普通に'],
+            yui: ['宿題してました', '読書ですかね', '早めに寝ました'],
+            sota: ['筋トレしてたわ', 'ストレッチっしょ', '寝てた']
+          },
+          default: {
+            takuya: [`${randomOther}ちょっと怪しくね？`, `なんか変だぜ`, `まあ様子見だな`],
+            misaki: [`うーん...${randomOther}さん...`, `どうなんだろう...`, `わからない...`],
+            kenta: [`${randomOther}、なんか変だな`, `別に`, `ふーん`],
+            ayaka: [`てか${randomOther}まじ怪しくない？`, `やばくない？`, `まじで？`],
+            ryota: [`${randomOther}の発言が気になる`, `論理的に考えると...`, `データ不足だね`],
+            yui: [`${randomOther}さんはどう思いますか？`, `難しいですね`, `みなさんの意見は？`],
+            sota: [`${randomOther}っしょ`, `まじでそれ`, `わかるわ`]
+          }
+        };
+
+        // 人狼は違和感のある発言
         if (role === 'werewolf') {
           const wolfFallbacks = [
             `えっと...${randomOther}が怪しいと思います。私は村人ですよ。`,
             `${randomOther}さん、なんか変じゃないですか？自分は違うんで。`,
-            `うーん、${randomOther}かな...いや、なんとなくそう思っただけです。`
+            `うーん、${randomOther}かな...いや、なんとなくそう思っただけです。`,
+            `自分は絶対村人なんで！${randomOther}を疑ったほうがいいと思います。`,
+            `正直に言うと...${randomOther}が怪しいかなって...`
           ];
           return wolfFallbacks[Math.floor(Math.random() * wolfFallbacks.length)];
         }
-        const fallbacks = { 
-          takuya: `${randomOther}ちょっと怪しくね？`, 
-          misaki: `うーん...${randomOther}さん、大丈夫かな...`, 
-          kenta: `${randomOther}、なんか変だな`, 
-          ayaka: `てか${randomOther}まじ怪しくない？`,
-          ryota: `${randomOther}の発言、ちょっと気になるんだよね`,
-          yui: `${randomOther}さんはどう思いますか？`,
-          sota: `${randomOther}っしょ、怪しいの`
-        };
-        return fallbacks[char.id] || `${randomOther}が怪しいかも`;
+
+        const responses = topicResponses[wolfGame.currentTopic] || topicResponses.default;
+        const charResponses = responses[char.id] || responses.takuya;
+        return charResponses[Math.floor(Math.random() * charResponses.length)];
       }
     }
     
@@ -3087,7 +3320,90 @@ ${roleHint}
       startWerewolf();
     }
     
+    // ===== ユーティリティ =====
+
+    // トースト通知
+    function showToast(message, type = 'info') {
+      const existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // サウンド効果（Web Audio API使用）
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      switch(type) {
+        case 'correct':
+          oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+          oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+          oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.4);
+          break;
+        case 'wrong':
+          oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+          oscillator.frequency.setValueAtTime(150, audioCtx.currentTime + 0.15);
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.3);
+          break;
+        case 'click':
+          oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+          gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.05);
+          break;
+        case 'select':
+          oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+          gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.1);
+          break;
+      }
+    }
+
+    // 統計データの保存・読み込み
+    function saveStats() {
+      const stats = {
+        humanWins: state.humanWins,
+        aiWins: state.aiWins,
+        streak: state.streak,
+        bestStreak: Math.max(state.streak, parseInt(localStorage.getItem('bestStreak') || '0')),
+        totalGames: state.humanWins + state.aiWins
+      };
+      localStorage.setItem('gameStats', JSON.stringify(stats));
+      localStorage.setItem('bestStreak', stats.bestStreak.toString());
+    }
+
+    function loadStats() {
+      const saved = localStorage.getItem('gameStats');
+      if (saved) {
+        const stats = JSON.parse(saved);
+        state.humanWins = stats.humanWins || 0;
+        state.aiWins = stats.aiWins || 0;
+        updateStats();
+      }
+    }
+
     // ===== INIT =====
+    loadStats();
     renderFeed();
   </script>
 
