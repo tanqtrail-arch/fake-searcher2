@@ -6,6 +6,10 @@
   <title>FAKE SEARCHER - AIのウソ、見抜けるか？</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
@@ -1752,7 +1756,14 @@
         <h1 style="font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;margin-bottom:8px;">
           <span style="color:#6366f1;">MULTI</span>PLAYER
         </h1>
-        <p style="font-size:14px;color:#888;margin-bottom:24px;">友達と対戦！早押しFAKE探し</p>
+        <p style="font-size:14px;color:#888;margin-bottom:16px;">友達と対戦！早押しFAKE探し</p>
+
+        <!-- 接続モード表示 -->
+        <div id="mpModeIndicator" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);padding:8px 16px;border-radius:20px;margin-bottom:20px;">
+          <span id="mpModeIcon">📱</span>
+          <span id="mpModeText" style="font-size:12px;color:#888;">ローカルモード</span>
+          <button onclick="showFirebaseSettings()" style="background:none;border:none;color:#6366f1;font-size:11px;cursor:pointer;text-decoration:underline;">設定</button>
+        </div>
 
         <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:20px;text-align:left;">
           <div style="font-size:14px;font-weight:700;margin-bottom:12px;">📜 ルール</div>
@@ -1820,9 +1831,17 @@
           </div>
         </div>
 
-        <button id="startMpGameBtn" onclick="startMultiplayerGame()" style="width:100%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;padding:18px;border-radius:14px;font-size:16px;font-weight:900;cursor:pointer;opacity:0.5;" disabled>
+        <button id="startMpGameBtn" onclick="startMultiplayerGame()" style="width:100%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;padding:18px;border-radius:14px;font-size:16px;font-weight:900;cursor:pointer;opacity:0.5;margin-bottom:12px;" disabled>
           待機中... (2人以上で開始)
         </button>
+
+        <button onclick="leaveRoom()" style="width:100%;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:14px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">
+          🚪 退出する
+        </button>
+
+        <div id="roomModeIndicator" style="margin-top:16px;font-size:11px;color:#666;text-align:center;">
+          <!-- Mode will be shown here -->
+        </div>
       </div>
     </div>
 
@@ -3537,7 +3556,182 @@ ${roleHint}
       startWerewolf();
     }
 
-    // ===== マルチプレイヤー =====
+    // ===== マルチプレイヤー (Firebase リアルタイム) =====
+
+    // Firebase設定
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "YOUR_APP_ID"
+    };
+
+    let firebaseApp = null;
+    let firebaseDb = null;
+    let firebaseAuth = null;
+    let currentUserId = null;
+    let roomRef = null;
+    let roomListener = null;
+
+    // Firebase初期化
+    async function initFirebase() {
+      try {
+        // localStorageから設定を読み込み
+        const savedConfig = localStorage.getItem('firebaseConfig');
+        if (savedConfig) {
+          const parsed = JSON.parse(savedConfig);
+          Object.assign(firebaseConfig, parsed);
+        }
+
+        // 設定が未入力の場合はローカルモードで動作
+        if (firebaseConfig.apiKey === "YOUR_API_KEY" || !firebaseConfig.apiKey) {
+          console.log('Firebase未設定: ローカルモードで動作');
+          mpState.localMode = true;
+          updateMpModeIndicator();
+          return false;
+        }
+
+        firebaseApp = firebase.initializeApp(firebaseConfig);
+        firebaseDb = firebase.database();
+        firebaseAuth = firebase.auth();
+
+        // 匿名認証
+        const userCred = await firebaseAuth.signInAnonymously();
+        currentUserId = userCred.user.uid;
+        console.log('Firebase接続成功:', currentUserId);
+        mpState.localMode = false;
+        updateMpModeIndicator();
+        return true;
+      } catch (e) {
+        console.error('Firebase初期化エラー:', e);
+        mpState.localMode = true;
+        updateMpModeIndicator();
+        return false;
+      }
+    }
+
+    // モード表示を更新
+    function updateMpModeIndicator() {
+      const icon = document.getElementById('mpModeIcon');
+      const text = document.getElementById('mpModeText');
+      if (!icon || !text) return;
+
+      if (mpState.localMode) {
+        icon.textContent = '📱';
+        text.textContent = 'ローカルモード（AIと対戦）';
+        text.style.color = '#888';
+      } else {
+        icon.textContent = '🌐';
+        text.textContent = 'オンラインモード';
+        text.style.color = '#22c55e';
+      }
+    }
+
+    // Firebase設定モーダル
+    function showFirebaseSettings() {
+      const modal = document.createElement('div');
+      modal.className = 'settings-modal';
+      modal.id = 'firebaseSettingsModal';
+      modal.style.display = 'flex';
+
+      const savedConfig = localStorage.getItem('firebaseConfig');
+      const config = savedConfig ? JSON.parse(savedConfig) : {};
+
+      modal.innerHTML = `
+        <div class="settings-content" style="max-width:400px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2 style="margin:0;">🔧 Firebase設定</h2>
+            <button onclick="closeFirebaseSettings()" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;">×</button>
+          </div>
+
+          <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:16px;margin-bottom:20px;">
+            <div style="font-size:13px;color:#60a5fa;margin-bottom:8px;font-weight:600;">💡 オンラインマルチプレイを有効にするには</div>
+            <ol style="font-size:12px;color:#93c5fd;line-height:1.8;margin:0;padding-left:20px;">
+              <li><a href="https://console.firebase.google.com/" target="_blank" style="color:#60a5fa;">Firebase Console</a>で新規プロジェクト作成</li>
+              <li>Realtime Databaseを有効化</li>
+              <li>Authentication → 匿名認証を有効化</li>
+              <li>プロジェクト設定からWeb設定をコピー</li>
+            </ol>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+            <div>
+              <label style="display:block;font-size:12px;color:#888;margin-bottom:4px;">API Key</label>
+              <input type="text" id="fbApiKey" value="${config.apiKey || ''}" placeholder="AIzaSy..."
+                style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;color:#888;margin-bottom:4px;">Auth Domain</label>
+              <input type="text" id="fbAuthDomain" value="${config.authDomain || ''}" placeholder="your-project.firebaseapp.com"
+                style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;color:#888;margin-bottom:4px;">Database URL</label>
+              <input type="text" id="fbDatabaseURL" value="${config.databaseURL || ''}" placeholder="https://your-project-default-rtdb.firebaseio.com"
+                style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;color:#888;margin-bottom:4px;">Project ID</label>
+              <input type="text" id="fbProjectId" value="${config.projectId || ''}" placeholder="your-project"
+                style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;color:#888;margin-bottom:4px;">App ID</label>
+              <input type="text" id="fbAppId" value="${config.appId || ''}" placeholder="1:123456789:web:abc123"
+                style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;">
+            <button onclick="saveFirebaseSettings()" style="flex:1;padding:14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;">
+              保存して再接続
+            </button>
+            <button onclick="clearFirebaseSettings()" style="padding:14px 20px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.3);border-radius:10px;color:#ef4444;font-weight:600;cursor:pointer;">
+              クリア
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function closeFirebaseSettings() {
+      const modal = document.getElementById('firebaseSettingsModal');
+      if (modal) modal.remove();
+    }
+
+    async function saveFirebaseSettings() {
+      const config = {
+        apiKey: document.getElementById('fbApiKey').value.trim(),
+        authDomain: document.getElementById('fbAuthDomain').value.trim(),
+        databaseURL: document.getElementById('fbDatabaseURL').value.trim(),
+        projectId: document.getElementById('fbProjectId').value.trim(),
+        storageBucket: document.getElementById('fbProjectId').value.trim() + '.appspot.com',
+        messagingSenderId: '',
+        appId: document.getElementById('fbAppId').value.trim()
+      };
+
+      localStorage.setItem('firebaseConfig', JSON.stringify(config));
+      closeFirebaseSettings();
+      showToast('🔄 再接続中...');
+
+      // ページをリロードして再接続
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    }
+
+    function clearFirebaseSettings() {
+      localStorage.removeItem('firebaseConfig');
+      closeFirebaseSettings();
+      showToast('🗑️ 設定をクリアしました');
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    }
 
     let mpState = {
       roomCode: null,
@@ -3551,8 +3745,75 @@ ${roleHint}
       answered: false,
       quizzes: [],
       wins: parseInt(localStorage.getItem('mpWins') || '0'),
-      losses: parseInt(localStorage.getItem('mpLosses') || '0')
+      losses: parseInt(localStorage.getItem('mpLosses') || '0'),
+      localMode: true,
+      myName: 'プレイヤー',
+      myAvatar: '👤',
+      gameStarted: false,
+      answeredPlayers: {}
     };
+
+    // プレイヤー名設定モーダル
+    function showNameInput(callback) {
+      const names = ['ゆうき', 'さくら', 'はると', 'あおい', 'りく', 'ひな', 'そら', 'みお'];
+      const avatars = ['😎', '🎀', '🎮', '📚', '⚽', '🎨', '🌟', '🎵'];
+      const randomName = names[Math.floor(Math.random() * names.length)];
+      const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+
+      const modal = document.createElement('div');
+      modal.className = 'settings-modal';
+      modal.style.display = 'flex';
+      modal.innerHTML = `
+        <div class="settings-content" style="max-width:350px;">
+          <h2 style="margin-bottom:20px;">🎮 プレイヤー設定</h2>
+          <div style="margin-bottom:15px;">
+            <label style="display:block;margin-bottom:5px;color:#aaa;font-size:12px;">ニックネーム</label>
+            <input type="text" id="playerNameInput" value="${randomName}" maxlength="10"
+              style="width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:16px;">
+          </div>
+          <div style="margin-bottom:20px;">
+            <label style="display:block;margin-bottom:10px;color:#aaa;font-size:12px;">アバター選択</label>
+            <div id="avatarGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+              ${avatars.map(a => `
+                <button onclick="selectAvatar('${a}', this)" class="avatar-btn ${a === randomAvatar ? 'selected' : ''}"
+                  style="padding:15px;font-size:24px;background:${a === randomAvatar ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.05)'};border:2px solid ${a === randomAvatar ? '#6366f1' : 'rgba(255,255,255,0.1)'};border-radius:10px;cursor:pointer;">
+                  ${a}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+          <button onclick="confirmPlayerName()" style="width:100%;padding:15px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:16px;cursor:pointer;">
+            決定
+          </button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      mpState.myAvatar = randomAvatar;
+      mpState.pendingCallback = callback;
+    }
+
+    function selectAvatar(emoji, btn) {
+      document.querySelectorAll('#avatarGrid button').forEach(b => {
+        b.classList.remove('selected');
+        b.style.background = 'rgba(255,255,255,0.05)';
+        b.style.borderColor = 'rgba(255,255,255,0.1)';
+      });
+      btn.classList.add('selected');
+      btn.style.background = 'rgba(99,102,241,0.3)';
+      btn.style.borderColor = '#6366f1';
+      mpState.myAvatar = emoji;
+    }
+
+    function confirmPlayerName() {
+      const name = document.getElementById('playerNameInput').value.trim() || 'プレイヤー';
+      mpState.myName = name;
+      document.querySelector('.settings-modal').remove();
+      if (mpState.pendingCallback) {
+        mpState.pendingCallback();
+        mpState.pendingCallback = null;
+      }
+    }
 
     // ルームコード生成
     function generateRoomCode() {
@@ -3565,24 +3826,130 @@ ${roleHint}
     }
 
     // 部屋を作成
-    function createRoom() {
+    async function createRoom() {
+      // まずプレイヤー名を設定
+      showNameInput(async () => {
+        await doCreateRoom();
+      });
+    }
+
+    async function doCreateRoom() {
       mpState.roomCode = generateRoomCode();
       mpState.isHost = true;
-      mpState.players = [
-        { id: 'you', name: 'あなた', avatar: '👤', isHost: true, score: 0 }
-      ];
-      mpState.scores = { 'you': 0 };
+      mpState.gameStarted = false;
 
-      // シミュレーション: AIプレイヤーを追加
-      setTimeout(() => addSimulatedPlayer(), 2000 + Math.random() * 3000);
+      const myPlayer = {
+        id: mpState.localMode ? 'local_host' : currentUserId,
+        name: mpState.myName,
+        avatar: mpState.myAvatar,
+        isHost: true,
+        score: 0
+      };
+
+      mpState.players = [myPlayer];
+      mpState.scores = {};
+      mpState.scores[myPlayer.id] = 0;
+
+      if (!mpState.localMode && firebaseDb) {
+        // Firebaseにルームを作成
+        roomRef = firebaseDb.ref('rooms/' + mpState.roomCode);
+        await roomRef.set({
+          code: mpState.roomCode,
+          host: currentUserId,
+          topic: mpState.topic,
+          status: 'waiting',
+          createdAt: firebase.database.ServerValue.TIMESTAMP,
+          players: {
+            [currentUserId]: myPlayer
+          },
+          quizzes: null,
+          currentQuestion: 0,
+          answers: {}
+        });
+
+        // リアルタイムリスナー設定
+        setupRoomListener();
+        showToast('🏠 オンラインルームを作成しました！', 'success');
+      } else {
+        // ローカルモード（シミュレーション）
+        setTimeout(() => addSimulatedPlayer(), 2000 + Math.random() * 3000);
+        showToast('🏠 ルームを作成しました（ローカル）', 'success');
+      }
 
       updateRoomUI();
       showScreen('multiplayerRoomScreen');
-      showToast('🏠 ルームを作成しました！', 'success');
     }
 
-    // シミュレートされたプレイヤーを追加
+    // Firebaseルームリスナー
+    function setupRoomListener() {
+      if (!roomRef) return;
+
+      roomListener = roomRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (!data) {
+          showToast('❌ ルームが削除されました', 'error');
+          leaveRoom();
+          return;
+        }
+
+        // プレイヤーリスト更新
+        if (data.players) {
+          const oldCount = mpState.players.length;
+          mpState.players = Object.values(data.players);
+          mpState.scores = {};
+          mpState.players.forEach(p => {
+            mpState.scores[p.id] = p.score || 0;
+          });
+
+          if (mpState.players.length > oldCount) {
+            const newPlayer = mpState.players[mpState.players.length - 1];
+            if (newPlayer.id !== currentUserId) {
+              showToast(`👋 ${newPlayer.name}が参加しました！`);
+              playSound('select');
+            }
+          }
+
+          updateRoomUI();
+        }
+
+        // ゲーム開始チェック
+        if (data.status === 'playing' && !mpState.gameStarted) {
+          mpState.gameStarted = true;
+          mpState.quizzes = data.quizzes || [];
+          mpState.currentQuestion = data.currentQuestion || 0;
+          showScreen('multiplayerGameScreen');
+          showMpQuestion();
+        }
+
+        // 問題遷移チェック
+        if (data.status === 'playing' && data.currentQuestion !== mpState.currentQuestion) {
+          mpState.currentQuestion = data.currentQuestion;
+          if (mpState.currentQuestion < 5) {
+            showMpQuestion();
+          } else {
+            showMpResult();
+          }
+        }
+
+        // スコア更新
+        if (data.players) {
+          mpState.players.forEach(p => {
+            const playerData = data.players[p.id];
+            if (playerData) {
+              p.score = playerData.score || 0;
+              mpState.scores[p.id] = p.score;
+            }
+          });
+          if (mpState.gameStarted) {
+            updateMpScoreboard();
+          }
+        }
+      });
+    }
+
+    // シミュレートされたプレイヤーを追加（ローカルモード用）
     function addSimulatedPlayer() {
+      if (!mpState.localMode) return;
       if (mpState.players.length >= 4) return;
 
       const aiNames = ['ゆうき', 'さくら', 'はると', 'あおい', 'りく', 'ひな'];
@@ -3602,8 +3969,8 @@ ${roleHint}
       mpState.scores[newPlayer.id] = 0;
       updateRoomUI();
       showToast(`👋 ${newPlayer.name}が参加しました！`);
+      playSound('select');
 
-      // さらにプレイヤーを追加する可能性
       if (mpState.players.length < 3 && Math.random() > 0.3) {
         setTimeout(() => addSimulatedPlayer(), 2000 + Math.random() * 3000);
       }
@@ -3623,21 +3990,69 @@ ${roleHint}
         return;
       }
 
-      // シミュレーション: 部屋に参加
+      showNameInput(async () => {
+        await doJoinRoom(code);
+      });
+    }
+
+    async function doJoinRoom(code) {
       mpState.roomCode = code;
       mpState.isHost = false;
-      mpState.players = [
-        { id: 'host', name: 'ホスト', avatar: '👑', isHost: true, score: 0 },
-        { id: 'you', name: 'あなた', avatar: '👤', isHost: false, score: 0 }
-      ];
-      mpState.scores = { 'host': 0, 'you': 0 };
+      mpState.gameStarted = false;
+
+      const myPlayer = {
+        id: mpState.localMode ? 'local_guest_' + Date.now() : currentUserId,
+        name: mpState.myName,
+        avatar: mpState.myAvatar,
+        isHost: false,
+        score: 0
+      };
+
+      if (!mpState.localMode && firebaseDb) {
+        // Firebaseからルームを検索
+        roomRef = firebaseDb.ref('rooms/' + code);
+        const snapshot = await roomRef.once('value');
+        const roomData = snapshot.val();
+
+        if (!roomData) {
+          showToast('❌ ルームが見つかりません', 'error');
+          return;
+        }
+
+        if (roomData.status === 'playing') {
+          showToast('❌ ゲームは既に開始されています', 'error');
+          return;
+        }
+
+        // プレイヤーを追加
+        await roomRef.child('players').child(currentUserId).set(myPlayer);
+
+        // リスナー設定
+        setupRoomListener();
+
+        // 既存プレイヤーを取得
+        mpState.players = Object.values(roomData.players);
+        mpState.players.push(myPlayer);
+        mpState.scores = {};
+        mpState.players.forEach(p => {
+          mpState.scores[p.id] = p.score || 0;
+        });
+
+        showToast('🚪 オンラインルームに参加しました！', 'success');
+      } else {
+        // ローカルモード
+        mpState.players = [
+          { id: 'host', name: 'ホスト', avatar: '👑', isHost: true, score: 0 },
+          myPlayer
+        ];
+        mpState.scores = { 'host': 0 };
+        mpState.scores[myPlayer.id] = 0;
+        setTimeout(() => addSimulatedPlayer(), 3000);
+        showToast('🚪 ルームに参加しました（ローカル）', 'success');
+      }
 
       updateRoomUI();
       showScreen('multiplayerRoomScreen');
-      showToast('🚪 ルームに参加しました！', 'success');
-
-      // AIプレイヤーを追加
-      setTimeout(() => addSimulatedPlayer(), 3000);
     }
 
     // ルームコードをコピー
@@ -3659,31 +4074,58 @@ ${roleHint}
       document.getElementById('roomCodeDisplay').textContent = mpState.roomCode;
       document.getElementById('playerCount').textContent = mpState.players.length;
 
+      const myId = mpState.localMode ? (mpState.isHost ? 'local_host' : mpState.players.find(p => !p.isHost && !p.isAI)?.id) : currentUserId;
+
       const playerList = document.getElementById('playerList');
-      playerList.innerHTML = mpState.players.map(p => `
-        <div class="mp-player-card ${p.isHost ? 'host' : ''} ${p.id === 'you' ? 'you' : ''}">
-          <div class="mp-player-avatar">${p.avatar}</div>
-          <div class="mp-player-name">${p.name} ${p.isHost ? '👑' : ''}</div>
-          ${p.id === 'you' ? '<span style="color:#6366f1;font-size:11px;">YOU</span>' : ''}
-        </div>
-      `).join('');
+      playerList.innerHTML = mpState.players.map(p => {
+        const isMe = p.id === myId || p.id === 'you' || (mpState.isHost && p.id === 'local_host');
+        return `
+          <div class="mp-player-card ${p.isHost ? 'host' : ''} ${isMe ? 'you' : ''}">
+            <div class="mp-player-avatar">${p.avatar}</div>
+            <div class="mp-player-name">${p.name} ${p.isHost ? '👑' : ''}</div>
+            ${isMe ? '<span style="color:#6366f1;font-size:11px;">YOU</span>' : ''}
+          </div>
+        `;
+      }).join('');
 
       const startBtn = document.getElementById('startMpGameBtn');
-      if (mpState.players.length >= 2) {
+      if (mpState.players.length >= 2 && mpState.isHost) {
         startBtn.disabled = false;
         startBtn.style.opacity = '1';
         startBtn.textContent = '🎮 ゲーム開始！';
+      } else if (mpState.players.length >= 2 && !mpState.isHost) {
+        startBtn.disabled = true;
+        startBtn.style.opacity = '0.7';
+        startBtn.textContent = 'ホストの開始を待機中...';
       } else {
         startBtn.disabled = true;
         startBtn.style.opacity = '0.5';
         startBtn.textContent = '待機中... (2人以上で開始)';
       }
+
+      // モード表示
+      const roomModeIndicator = document.getElementById('roomModeIndicator');
+      if (roomModeIndicator) {
+        if (mpState.localMode) {
+          roomModeIndicator.innerHTML = '📱 ローカルモード（AIプレイヤーと対戦）';
+        } else {
+          roomModeIndicator.innerHTML = '🌐 オンラインモード（リアルタイム接続中）';
+          roomModeIndicator.style.color = '#22c55e';
+        }
+      }
     }
 
     // ゲーム開始
     async function startMultiplayerGame() {
+      if (!mpState.isHost) {
+        showToast('⚠️ ホストのみゲームを開始できます', 'error');
+        return;
+      }
+
       mpState.currentQuestion = 0;
       mpState.quizzes = [];
+      mpState.gameStarted = true;
+      mpState.answeredPlayers = {};
 
       // 全プレイヤーのスコアをリセット
       mpState.players.forEach(p => {
@@ -3691,21 +4133,40 @@ ${roleHint}
         mpState.scores[p.id] = 0;
       });
 
-      showScreen('multiplayerGameScreen');
-      showToast('🎮 ゲーム開始！');
-
       // 5問分のクイズを準備
       for (let i = 0; i < 5; i++) {
         const quiz = getOfflineQuiz(mpState.topic);
         mpState.quizzes.push(quiz);
       }
 
-      showMpQuestion();
+      if (!mpState.localMode && roomRef) {
+        // Firebaseにゲーム状態を保存
+        const playersUpdate = {};
+        mpState.players.forEach(p => {
+          playersUpdate[p.id] = { ...p, score: 0 };
+        });
+
+        await roomRef.update({
+          status: 'playing',
+          quizzes: mpState.quizzes,
+          currentQuestion: 0,
+          players: playersUpdate,
+          answers: {}
+        });
+      } else {
+        showScreen('multiplayerGameScreen');
+        showToast('🎮 ゲーム開始！');
+        showMpQuestion();
+      }
     }
 
     // 問題を表示
     function showMpQuestion() {
+      if (!mpState.quizzes || mpState.quizzes.length === 0) return;
+
       const quiz = mpState.quizzes[mpState.currentQuestion];
+      if (!quiz) return;
+
       mpState.answered = false;
       mpState.timeLeft = 10;
 
@@ -3769,44 +4230,62 @@ ${roleHint}
     }
 
     // 回答送信
-    function submitMpAnswer(index) {
+    async function submitMpAnswer(index) {
       if (mpState.answered) return;
       mpState.answered = true;
 
       const quiz = mpState.quizzes[mpState.currentQuestion];
       const correct = quiz.facts[index].isLie;
       const timeBonus = mpState.timeLeft;
+      const myId = mpState.localMode ? (mpState.isHost ? 'local_host' : mpState.players.find(p => !p.isHost && !p.isAI)?.id) : currentUserId;
 
       // スコア計算
+      let earnedPoints = 0;
       if (correct) {
-        const points = 100 + timeBonus * 10;
-        mpState.scores['you'] += points;
-        mpState.players.find(p => p.id === 'you').score += points;
+        earnedPoints = 100 + timeBonus * 10;
+        mpState.scores[myId] = (mpState.scores[myId] || 0) + earnedPoints;
+        const myPlayer = mpState.players.find(p => p.id === myId);
+        if (myPlayer) myPlayer.score = mpState.scores[myId];
         playSound('correct');
-        showToast(`🎉 正解！+${points}点`, 'success');
+        showToast(`🎉 正解！+${earnedPoints}点`, 'success');
       } else {
         playSound('wrong');
         showToast('❌ 不正解...', 'error');
       }
 
-      // AIプレイヤーの回答をシミュレート
-      simulateAIAnswers(quiz);
+      if (!mpState.localMode && roomRef) {
+        // Firebaseにスコアを送信
+        await roomRef.child('players').child(currentUserId).update({
+          score: mpState.scores[myId]
+        });
+        await roomRef.child('answers').child(mpState.currentQuestion.toString()).child(currentUserId).set({
+          answer: index,
+          correct: correct,
+          points: earnedPoints,
+          time: mpState.timeLeft
+        });
+      } else {
+        // ローカルモード: AIの回答をシミュレート
+        simulateAIAnswers(quiz);
+      }
 
       showMpAnswer(index);
     }
 
-    // AIの回答をシミュレート
+    // AIの回答をシミュレート（ローカルモード用）
     function simulateAIAnswers(quiz) {
+      if (!mpState.localMode) return;
+
       const correctIdx = quiz.facts.findIndex(f => f.isLie);
 
-      mpState.players.filter(p => p.isAI || p.id === 'host').forEach(p => {
+      mpState.players.filter(p => p.isAI || (p.id === 'host' && !mpState.isHost)).forEach(p => {
         // AIは70%の確率で正解
         const isCorrect = Math.random() < 0.7;
         if (isCorrect) {
           const aiTimeBonus = Math.floor(Math.random() * mpState.timeLeft);
           const points = 100 + aiTimeBonus * 10;
-          mpState.scores[p.id] += points;
-          p.score += points;
+          mpState.scores[p.id] = (mpState.scores[p.id] || 0) + points;
+          p.score = mpState.scores[p.id];
         }
       });
 
@@ -3814,7 +4293,7 @@ ${roleHint}
     }
 
     // 回答を表示
-    function showMpAnswer(selectedIndex) {
+    async function showMpAnswer(selectedIndex) {
       clearInterval(mpState.timer);
 
       const quiz = mpState.quizzes[mpState.currentQuestion];
@@ -3827,20 +4306,32 @@ ${roleHint}
       });
 
       // 2秒後に次の問題または結果へ
-      setTimeout(() => {
+      setTimeout(async () => {
         mpState.currentQuestion++;
-        if (mpState.currentQuestion < 5) {
-          showMpQuestion();
-        } else {
-          showMpResult();
+
+        if (!mpState.localMode && roomRef && mpState.isHost) {
+          // ホストが次の問題へ進める
+          if (mpState.currentQuestion < 5) {
+            await roomRef.update({ currentQuestion: mpState.currentQuestion });
+          } else {
+            await roomRef.update({ status: 'finished', currentQuestion: 5 });
+            showMpResult();
+          }
+        } else if (mpState.localMode) {
+          if (mpState.currentQuestion < 5) {
+            showMpQuestion();
+          } else {
+            showMpResult();
+          }
         }
-      }, 2000);
+      }, 2500);
     }
 
     // 結果を表示
     function showMpResult() {
       const sorted = [...mpState.players].sort((a, b) => b.score - a.score);
-      const myRank = sorted.findIndex(p => p.id === 'you') + 1;
+      const myId = mpState.localMode ? (mpState.isHost ? 'local_host' : mpState.players.find(p => !p.isHost && !p.isAI)?.id) : currentUserId;
+      const myRank = sorted.findIndex(p => p.id === myId) + 1;
       const won = myRank === 1;
 
       // 戦績更新
@@ -3858,7 +4349,7 @@ ${roleHint}
       document.getElementById('mpResultIcon').textContent = won ? '🏆' : (myRank === 2 ? '🥈' : '🎮');
       document.getElementById('mpResultTitle').textContent = won ? '優勝！' : `${myRank}位`;
       document.getElementById('mpResultTitle').style.color = won ? '#fbbf24' : '#fff';
-      document.getElementById('mpResultSubtitle').textContent = `あなたのスコア: ${mpState.scores['you']}点`;
+      document.getElementById('mpResultSubtitle').textContent = `あなたのスコア: ${mpState.scores[myId] || 0}点`;
 
       // ランキング表示
       document.getElementById('mpFinalRanking').innerHTML = sorted.map((p, i) => `
@@ -3866,7 +4357,7 @@ ${roleHint}
           <div class="mp-rank-num">${i + 1}</div>
           <div class="mp-player-avatar" style="width:36px;height:36px;font-size:18px;">${p.avatar}</div>
           <div style="flex:1;">
-            <div style="font-weight:600;">${p.name} ${p.id === 'you' ? '(YOU)' : ''}</div>
+            <div style="font-weight:600;">${p.name} ${p.id === myId ? '(YOU)' : ''}</div>
           </div>
           <div style="font-family:'Orbitron',sans-serif;font-weight:700;color:${i === 0 ? '#fbbf24' : '#6366f1'}">${p.score}pt</div>
         </div>
@@ -3877,15 +4368,50 @@ ${roleHint}
     }
 
     // もう一度
-    function restartMultiplayer() {
-      startMultiplayerGame();
+    async function restartMultiplayer() {
+      if (!mpState.localMode && roomRef && mpState.isHost) {
+        // Firebaseの状態をリセット
+        await roomRef.update({
+          status: 'waiting',
+          currentQuestion: 0,
+          quizzes: null,
+          answers: {}
+        });
+      }
+      mpState.gameStarted = false;
+      updateRoomUI();
+      showScreen('multiplayerRoomScreen');
     }
 
     // 退出
-    function leaveRoom() {
+    async function leaveRoom() {
+      // Firebaseリスナーを解除
+      if (roomRef && roomListener) {
+        roomRef.off('value', roomListener);
+        roomListener = null;
+      }
+
+      // Firebaseからプレイヤーを削除
+      if (!mpState.localMode && roomRef && currentUserId) {
+        try {
+          await roomRef.child('players').child(currentUserId).remove();
+
+          // ホストが退出した場合はルーム削除
+          if (mpState.isHost) {
+            await roomRef.remove();
+          }
+        } catch (e) {
+          console.error('退出エラー:', e);
+        }
+      }
+
       mpState.roomCode = null;
       mpState.players = [];
+      mpState.gameStarted = false;
+      roomRef = null;
+
       switchTab('multiplayer');
+      showToast('👋 ルームから退出しました');
     }
 
     // ===== ユーティリティ =====
@@ -3973,6 +4499,20 @@ ${roleHint}
     // ===== INIT =====
     loadStats();
     renderFeed();
+
+    // マルチプレイ戦績を表示
+    document.getElementById('mpWins').textContent = mpState.wins;
+    document.getElementById('mpLosses').textContent = mpState.losses;
+
+    // Firebase初期化
+    initFirebase().then(connected => {
+      if (connected) {
+        console.log('Firebaseオンラインモード');
+        showToast('🌐 オンライン接続完了！');
+      } else {
+        console.log('ローカルモード（AIシミュレーション）');
+      }
+    });
   </script>
 
 </body>
