@@ -1130,6 +1130,77 @@
       .topic-btn-text { font-size: 10px; }
     }
 
+    /* ===== MULTIPLAYER ===== */
+    .mp-topic-btn {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #888;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mp-topic-btn:hover { border-color: rgba(99,102,241,0.3); }
+    .mp-topic-btn.selected {
+      border-color: #6366f1;
+      background: rgba(99,102,241,0.1);
+      color: #6366f1;
+    }
+    .mp-player-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .mp-player-card.host { border-color: rgba(99,102,241,0.3); }
+    .mp-player-card.you { background: rgba(99,102,241,0.1); }
+    .mp-player-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+    .mp-player-name { font-weight: 600; flex: 1; }
+    .mp-player-score {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      color: #6366f1;
+    }
+    .mp-score-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 8px 12px;
+      text-align: center;
+      min-width: 70px;
+    }
+    .mp-score-card.leading { border-color: #fbbf24; background: rgba(251,191,36,0.1); }
+    .mp-score-card-name { font-size: 11px; color: #888; margin-bottom: 2px; }
+    .mp-score-card-score { font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700; }
+    .mp-rank-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .mp-rank-card.rank-1 { background: linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.1)); border: 1px solid rgba(251,191,36,0.3); }
+    .mp-rank-card.rank-2 { background: rgba(192,192,192,0.1); border: 1px solid rgba(192,192,192,0.2); }
+    .mp-rank-card.rank-3 { background: rgba(205,127,50,0.1); border: 1px solid rgba(205,127,50,0.2); }
+    .mp-rank-num { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 900; width: 32px; }
+    .mp-rank-card.rank-1 .mp-rank-num { color: #fbbf24; }
+    .mp-rank-card.rank-2 .mp-rank-num { color: #c0c0c0; }
+    .mp-rank-card.rank-3 .mp-rank-num { color: #cd7f32; }
+
     /* ===== TOAST NOTIFICATION ===== */
     .toast {
       position: fixed;
@@ -1196,6 +1267,9 @@
   <nav class="nav-tabs" id="navTabs">
     <div class="nav-tab active" data-screen="home" onclick="switchTab('home')">
       <span class="icon">🎮</span> プレイ
+    </div>
+    <div class="nav-tab" data-screen="multiplayer" onclick="switchTab('multiplayer')">
+      <span class="icon">👥</span> 対戦
     </div>
     <div class="nav-tab" data-screen="feed" onclick="switchTab('feed')">
       <span class="icon">🌍</span> みんな
@@ -1651,7 +1725,7 @@
         <div class="wolf-result-icon" id="wolfResultIcon">🎉</div>
         <h1 class="wolf-result-title" id="wolfResultTitle">結果</h1>
         <p class="wolf-result-subtitle" id="wolfResultSubtitle">...</p>
-        
+
         <div class="wolf-result-bar">
           <div class="wolf-result-bar-title">SCORE</div>
           <div class="wolf-result-bar-track">
@@ -1659,7 +1733,7 @@
             <div class="wolf-result-bar-ai" id="wolfResultBarAi" style="width:50%">50%</div>
           </div>
         </div>
-        
+
         <div class="wolf-result-reveal">
           <div class="wolf-result-reveal-title">👥 正体公開</div>
           <div class="wolf-result-cards" id="wolfResultCards"></div>
@@ -1670,7 +1744,148 @@
         </div>
       </div>
     </div>
-    
+
+    <!-- ===== MULTIPLAYER LOBBY SCREEN ===== -->
+    <div class="screen" id="multiplayerScreen">
+      <div style="text-align:center;padding:24px 0;">
+        <div style="font-size:64px;margin-bottom:16px;">👥</div>
+        <h1 style="font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;margin-bottom:8px;">
+          <span style="color:#6366f1;">MULTI</span>PLAYER
+        </h1>
+        <p style="font-size:14px;color:#888;margin-bottom:24px;">友達と対戦！早押しFAKE探し</p>
+
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:20px;text-align:left;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:12px;">📜 ルール</div>
+          <ul style="font-size:13px;color:#aaa;line-height:1.8;list-style:none;">
+            <li>• 同じクイズが全員に出題</li>
+            <li>• 早く正解した人が高得点</li>
+            <li>• 間違えると0点</li>
+            <li>• 5問終了で勝敗決定</li>
+          </ul>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-bottom:20px;">
+          <button onclick="createRoom()" style="flex:1;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;padding:16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
+            🏠 部屋を作る
+          </button>
+          <button onclick="showJoinRoom()" style="flex:1;background:rgba(255,255,255,0.05);color:#fff;border:1px solid rgba(255,255,255,0.1);padding:16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
+            🚪 参加する
+          </button>
+        </div>
+
+        <div id="joinRoomSection" style="display:none;margin-bottom:20px;">
+          <input type="text" id="roomCodeInput" placeholder="ルームコードを入力..." maxlength="6" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;color:#fff;font-size:18px;text-align:center;letter-spacing:8px;text-transform:uppercase;margin-bottom:12px;">
+          <button onclick="joinRoom()" style="width:100%;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;padding:14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;">
+            参加する
+          </button>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px;">
+          <div style="font-size:12px;color:#666;margin-bottom:8px;">🏆 マルチプレイ戦績</div>
+          <div style="display:flex;justify-content:center;gap:32px;">
+            <div style="text-align:center;">
+              <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:#22c55e;" id="mpWins">0</div>
+              <div style="font-size:11px;color:#888;">勝利</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:#ef4444;" id="mpLosses">0</div>
+              <div style="font-size:11px;color:#888;">敗北</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MULTIPLAYER ROOM SCREEN ===== -->
+    <div class="screen" id="multiplayerRoomScreen">
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:12px;color:#888;margin-bottom:8px;">ルームコード</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:36px;font-weight:900;color:#6366f1;letter-spacing:8px;margin-bottom:4px;" id="roomCodeDisplay">ABCD12</div>
+        <button onclick="copyRoomCode()" style="background:none;border:none;color:#888;font-size:12px;cursor:pointer;text-decoration:underline;">コードをコピー</button>
+
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin:20px 0;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:16px;">👥 参加者 (<span id="playerCount">1</span>/4)</div>
+          <div id="playerList" style="display:flex;flex-direction:column;gap:8px;">
+            <!-- Players will be added here -->
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <div style="font-size:12px;color:#888;margin-bottom:8px;">トピック</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;" id="mpTopicSelect">
+            <button class="mp-topic-btn selected" data-topic="生き物" onclick="selectMpTopic(this)">🐙 生き物</button>
+            <button class="mp-topic-btn" data-topic="宇宙" onclick="selectMpTopic(this)">🚀 宇宙</button>
+            <button class="mp-topic-btn" data-topic="偉人" onclick="selectMpTopic(this)">👤 偉人</button>
+            <button class="mp-topic-btn" data-topic="地理" onclick="selectMpTopic(this)">🌍 地理</button>
+          </div>
+        </div>
+
+        <button id="startMpGameBtn" onclick="startMultiplayerGame()" style="width:100%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;padding:18px;border-radius:14px;font-size:16px;font-weight:900;cursor:pointer;opacity:0.5;" disabled>
+          待機中... (2人以上で開始)
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== MULTIPLAYER GAME SCREEN ===== -->
+    <div class="screen" id="multiplayerGameScreen">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="background:rgba(99,102,241,0.2);color:#6366f1;padding:8px 14px;border-radius:12px;font-size:12px;font-weight:700;">
+          Q<span id="mpQuestionNum">1</span>/5
+        </div>
+        <div style="background:rgba(236,72,153,0.2);color:#ec4899;padding:8px 14px;border-radius:12px;font-size:12px;font-weight:700;">
+          ⏱️ <span id="mpTimer">10</span>秒
+        </div>
+      </div>
+
+      <div id="mpScoreboard" style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:8px;">
+        <!-- Player scores will be shown here -->
+      </div>
+
+      <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:20px;padding:20px;margin-bottom:16px;">
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;line-height:1.5;" id="mpQuizTitle">読み込み中...</h2>
+        <div id="mpFactsList" style="display:flex;flex-direction:column;gap:8px;">
+          <!-- Facts will be shown here -->
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,rgba(236,72,153,0.08),rgba(168,85,247,0.08));border:1px solid rgba(236,72,153,0.2);border-radius:16px;padding:16px;margin-bottom:12px;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#ec4899;margin-bottom:12px;">🎯 FIND THE FAKE</div>
+        <div id="mpAnswerGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+          <!-- Answer buttons will be shown here -->
+        </div>
+      </div>
+
+      <div id="mpWaitingOverlay" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;flex-direction:column;border-radius:20px;">
+        <div style="font-size:48px;margin-bottom:16px;">⏳</div>
+        <div style="font-size:16px;color:#fff;">他のプレイヤーを待っています...</div>
+      </div>
+    </div>
+
+    <!-- ===== MULTIPLAYER RESULT SCREEN ===== -->
+    <div class="screen" id="multiplayerResultScreen">
+      <div style="text-align:center;padding:24px 0;">
+        <div style="font-size:64px;margin-bottom:16px;" id="mpResultIcon">🏆</div>
+        <h1 style="font-family:'Orbitron',sans-serif;font-size:32px;font-weight:900;margin-bottom:8px;" id="mpResultTitle">結果</h1>
+        <p style="font-size:14px;color:#888;margin-bottom:24px;" id="mpResultSubtitle">ゲーム終了！</p>
+
+        <div id="mpFinalScoreboard" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:24px;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:16px;">🏆 最終順位</div>
+          <div id="mpFinalRanking" style="display:flex;flex-direction:column;gap:8px;">
+            <!-- Final ranking will be shown here -->
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;">
+          <button onclick="restartMultiplayer()" style="flex:1;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;padding:16px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">
+            もう一度
+          </button>
+          <button onclick="leaveRoom()" style="flex:1;background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.1);padding:16px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;">
+            退出
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -1754,14 +1969,16 @@
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      document.getElementById('backBtn').classList.toggle('show', !['homeScreen','feedScreen','createScreen','werewolfScreen'].includes(id));
-      document.getElementById('navTabs').style.display = ['homeScreen','feedScreen','createScreen','werewolfScreen'].includes(id) ? 'flex' : 'none';
+      const mainScreens = ['homeScreen','feedScreen','createScreen','werewolfScreen','multiplayerScreen'];
+      document.getElementById('backBtn').classList.toggle('show', !mainScreens.includes(id));
+      document.getElementById('navTabs').style.display = mainScreens.includes(id) ? 'flex' : 'none';
     }
     
     function switchTab(tab) {
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-      document.querySelector(`[data-screen="${tab}"]`).classList.add('active');
+      document.querySelector(`[data-screen="${tab}"]`)?.classList.add('active');
       if(tab === 'home') showScreen('homeScreen');
+      else if(tab === 'multiplayer') showScreen('multiplayerScreen');
       else if(tab === 'feed') { renderFeed(); showScreen('feedScreen'); }
       else if(tab === 'create') showScreen('createScreen');
       else if(tab === 'werewolf') showScreen('werewolfScreen');
@@ -3319,7 +3536,358 @@ ${roleHint}
     function restartWerewolf() {
       startWerewolf();
     }
-    
+
+    // ===== マルチプレイヤー =====
+
+    let mpState = {
+      roomCode: null,
+      isHost: false,
+      players: [],
+      currentQuestion: 0,
+      scores: {},
+      topic: '生き物',
+      timer: null,
+      timeLeft: 10,
+      answered: false,
+      quizzes: [],
+      wins: parseInt(localStorage.getItem('mpWins') || '0'),
+      losses: parseInt(localStorage.getItem('mpLosses') || '0')
+    };
+
+    // ルームコード生成
+    function generateRoomCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars[Math.floor(Math.random() * chars.length)];
+      }
+      return code;
+    }
+
+    // 部屋を作成
+    function createRoom() {
+      mpState.roomCode = generateRoomCode();
+      mpState.isHost = true;
+      mpState.players = [
+        { id: 'you', name: 'あなた', avatar: '👤', isHost: true, score: 0 }
+      ];
+      mpState.scores = { 'you': 0 };
+
+      // シミュレーション: AIプレイヤーを追加
+      setTimeout(() => addSimulatedPlayer(), 2000 + Math.random() * 3000);
+
+      updateRoomUI();
+      showScreen('multiplayerRoomScreen');
+      showToast('🏠 ルームを作成しました！', 'success');
+    }
+
+    // シミュレートされたプレイヤーを追加
+    function addSimulatedPlayer() {
+      if (mpState.players.length >= 4) return;
+
+      const aiNames = ['ゆうき', 'さくら', 'はると', 'あおい', 'りく', 'ひな'];
+      const aiAvatars = ['😎', '🎀', '🎮', '📚', '⚽', '🎨'];
+      const idx = mpState.players.length - 1;
+
+      const newPlayer = {
+        id: 'ai_' + Date.now(),
+        name: aiNames[idx % aiNames.length],
+        avatar: aiAvatars[idx % aiAvatars.length],
+        isHost: false,
+        score: 0,
+        isAI: true
+      };
+
+      mpState.players.push(newPlayer);
+      mpState.scores[newPlayer.id] = 0;
+      updateRoomUI();
+      showToast(`👋 ${newPlayer.name}が参加しました！`);
+
+      // さらにプレイヤーを追加する可能性
+      if (mpState.players.length < 3 && Math.random() > 0.3) {
+        setTimeout(() => addSimulatedPlayer(), 2000 + Math.random() * 3000);
+      }
+    }
+
+    // 参加セクションを表示
+    function showJoinRoom() {
+      const section = document.getElementById('joinRoomSection');
+      section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // 部屋に参加
+    function joinRoom() {
+      const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+      if (code.length !== 6) {
+        showToast('❌ ルームコードは6文字です', 'error');
+        return;
+      }
+
+      // シミュレーション: 部屋に参加
+      mpState.roomCode = code;
+      mpState.isHost = false;
+      mpState.players = [
+        { id: 'host', name: 'ホスト', avatar: '👑', isHost: true, score: 0 },
+        { id: 'you', name: 'あなた', avatar: '👤', isHost: false, score: 0 }
+      ];
+      mpState.scores = { 'host': 0, 'you': 0 };
+
+      updateRoomUI();
+      showScreen('multiplayerRoomScreen');
+      showToast('🚪 ルームに参加しました！', 'success');
+
+      // AIプレイヤーを追加
+      setTimeout(() => addSimulatedPlayer(), 3000);
+    }
+
+    // ルームコードをコピー
+    function copyRoomCode() {
+      navigator.clipboard.writeText(mpState.roomCode).then(() => {
+        showToast('📋 コピーしました！', 'success');
+      });
+    }
+
+    // トピック選択
+    function selectMpTopic(el) {
+      document.querySelectorAll('.mp-topic-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      mpState.topic = el.dataset.topic;
+    }
+
+    // ルームUIを更新
+    function updateRoomUI() {
+      document.getElementById('roomCodeDisplay').textContent = mpState.roomCode;
+      document.getElementById('playerCount').textContent = mpState.players.length;
+
+      const playerList = document.getElementById('playerList');
+      playerList.innerHTML = mpState.players.map(p => `
+        <div class="mp-player-card ${p.isHost ? 'host' : ''} ${p.id === 'you' ? 'you' : ''}">
+          <div class="mp-player-avatar">${p.avatar}</div>
+          <div class="mp-player-name">${p.name} ${p.isHost ? '👑' : ''}</div>
+          ${p.id === 'you' ? '<span style="color:#6366f1;font-size:11px;">YOU</span>' : ''}
+        </div>
+      `).join('');
+
+      const startBtn = document.getElementById('startMpGameBtn');
+      if (mpState.players.length >= 2) {
+        startBtn.disabled = false;
+        startBtn.style.opacity = '1';
+        startBtn.textContent = '🎮 ゲーム開始！';
+      } else {
+        startBtn.disabled = true;
+        startBtn.style.opacity = '0.5';
+        startBtn.textContent = '待機中... (2人以上で開始)';
+      }
+    }
+
+    // ゲーム開始
+    async function startMultiplayerGame() {
+      mpState.currentQuestion = 0;
+      mpState.quizzes = [];
+
+      // 全プレイヤーのスコアをリセット
+      mpState.players.forEach(p => {
+        p.score = 0;
+        mpState.scores[p.id] = 0;
+      });
+
+      showScreen('multiplayerGameScreen');
+      showToast('🎮 ゲーム開始！');
+
+      // 5問分のクイズを準備
+      for (let i = 0; i < 5; i++) {
+        const quiz = getOfflineQuiz(mpState.topic);
+        mpState.quizzes.push(quiz);
+      }
+
+      showMpQuestion();
+    }
+
+    // 問題を表示
+    function showMpQuestion() {
+      const quiz = mpState.quizzes[mpState.currentQuestion];
+      mpState.answered = false;
+      mpState.timeLeft = 10;
+
+      document.getElementById('mpQuestionNum').textContent = mpState.currentQuestion + 1;
+      document.getElementById('mpQuizTitle').textContent = quiz.title;
+
+      // 事実リスト
+      document.getElementById('mpFactsList').innerHTML = quiz.facts.map((f, i) => `
+        <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;display:flex;align-items:flex-start;gap:10px;">
+          <div style="width:24px;height:24px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;flex-shrink:0;">${i + 1}</div>
+          <div style="font-size:13px;line-height:1.5;color:#ccc;">${f.text}</div>
+        </div>
+      `).join('');
+
+      // 回答ボタン
+      const letters = ['A', 'B', 'C', 'D'];
+      document.getElementById('mpAnswerGrid').innerHTML = quiz.facts.map((f, i) => `
+        <button class="answer-btn" data-index="${i}" onclick="submitMpAnswer(${i})" style="padding:12px;">
+          <span class="answer-letter" style="width:28px;height:28px;font-size:12px;">${letters[i]}</span>
+          <span class="answer-text" style="font-size:12px;">${f.text.substring(0, 30)}...</span>
+        </button>
+      `).join('');
+
+      // スコアボード更新
+      updateMpScoreboard();
+
+      // タイマー開始
+      updateMpTimer();
+      if (mpState.timer) clearInterval(mpState.timer);
+      mpState.timer = setInterval(mpTimerTick, 1000);
+    }
+
+    // スコアボード更新
+    function updateMpScoreboard() {
+      const sorted = [...mpState.players].sort((a, b) => b.score - a.score);
+      const maxScore = sorted[0]?.score || 0;
+
+      document.getElementById('mpScoreboard').innerHTML = sorted.map(p => `
+        <div class="mp-score-card ${p.score === maxScore && maxScore > 0 ? 'leading' : ''}">
+          <div class="mp-score-card-name">${p.avatar} ${p.name}</div>
+          <div class="mp-score-card-score" style="color:${p.id === 'you' ? '#6366f1' : '#fff'}">${p.score}</div>
+        </div>
+      `).join('');
+    }
+
+    // タイマー更新
+    function updateMpTimer() {
+      document.getElementById('mpTimer').textContent = mpState.timeLeft;
+    }
+
+    function mpTimerTick() {
+      mpState.timeLeft--;
+      updateMpTimer();
+
+      if (mpState.timeLeft <= 0) {
+        clearInterval(mpState.timer);
+        if (!mpState.answered) {
+          showMpAnswer(-1); // タイムアウト
+        }
+      }
+    }
+
+    // 回答送信
+    function submitMpAnswer(index) {
+      if (mpState.answered) return;
+      mpState.answered = true;
+
+      const quiz = mpState.quizzes[mpState.currentQuestion];
+      const correct = quiz.facts[index].isLie;
+      const timeBonus = mpState.timeLeft;
+
+      // スコア計算
+      if (correct) {
+        const points = 100 + timeBonus * 10;
+        mpState.scores['you'] += points;
+        mpState.players.find(p => p.id === 'you').score += points;
+        playSound('correct');
+        showToast(`🎉 正解！+${points}点`, 'success');
+      } else {
+        playSound('wrong');
+        showToast('❌ 不正解...', 'error');
+      }
+
+      // AIプレイヤーの回答をシミュレート
+      simulateAIAnswers(quiz);
+
+      showMpAnswer(index);
+    }
+
+    // AIの回答をシミュレート
+    function simulateAIAnswers(quiz) {
+      const correctIdx = quiz.facts.findIndex(f => f.isLie);
+
+      mpState.players.filter(p => p.isAI || p.id === 'host').forEach(p => {
+        // AIは70%の確率で正解
+        const isCorrect = Math.random() < 0.7;
+        if (isCorrect) {
+          const aiTimeBonus = Math.floor(Math.random() * mpState.timeLeft);
+          const points = 100 + aiTimeBonus * 10;
+          mpState.scores[p.id] += points;
+          p.score += points;
+        }
+      });
+
+      updateMpScoreboard();
+    }
+
+    // 回答を表示
+    function showMpAnswer(selectedIndex) {
+      clearInterval(mpState.timer);
+
+      const quiz = mpState.quizzes[mpState.currentQuestion];
+      const correctIdx = quiz.facts.findIndex(f => f.isLie);
+
+      document.querySelectorAll('#mpAnswerGrid .answer-btn').forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === correctIdx) btn.classList.add('correct');
+        else if (i === selectedIndex && selectedIndex !== correctIdx) btn.classList.add('wrong');
+      });
+
+      // 2秒後に次の問題または結果へ
+      setTimeout(() => {
+        mpState.currentQuestion++;
+        if (mpState.currentQuestion < 5) {
+          showMpQuestion();
+        } else {
+          showMpResult();
+        }
+      }, 2000);
+    }
+
+    // 結果を表示
+    function showMpResult() {
+      const sorted = [...mpState.players].sort((a, b) => b.score - a.score);
+      const myRank = sorted.findIndex(p => p.id === 'you') + 1;
+      const won = myRank === 1;
+
+      // 戦績更新
+      if (won) {
+        mpState.wins++;
+        localStorage.setItem('mpWins', mpState.wins);
+      } else {
+        mpState.losses++;
+        localStorage.setItem('mpLosses', mpState.losses);
+      }
+
+      document.getElementById('mpWins').textContent = mpState.wins;
+      document.getElementById('mpLosses').textContent = mpState.losses;
+
+      document.getElementById('mpResultIcon').textContent = won ? '🏆' : (myRank === 2 ? '🥈' : '🎮');
+      document.getElementById('mpResultTitle').textContent = won ? '優勝！' : `${myRank}位`;
+      document.getElementById('mpResultTitle').style.color = won ? '#fbbf24' : '#fff';
+      document.getElementById('mpResultSubtitle').textContent = `あなたのスコア: ${mpState.scores['you']}点`;
+
+      // ランキング表示
+      document.getElementById('mpFinalRanking').innerHTML = sorted.map((p, i) => `
+        <div class="mp-rank-card rank-${i + 1}">
+          <div class="mp-rank-num">${i + 1}</div>
+          <div class="mp-player-avatar" style="width:36px;height:36px;font-size:18px;">${p.avatar}</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;">${p.name} ${p.id === 'you' ? '(YOU)' : ''}</div>
+          </div>
+          <div style="font-family:'Orbitron',sans-serif;font-weight:700;color:${i === 0 ? '#fbbf24' : '#6366f1'}">${p.score}pt</div>
+        </div>
+      `).join('');
+
+      showScreen('multiplayerResultScreen');
+      playSound(won ? 'correct' : 'wrong');
+    }
+
+    // もう一度
+    function restartMultiplayer() {
+      startMultiplayerGame();
+    }
+
+    // 退出
+    function leaveRoom() {
+      mpState.roomCode = null;
+      mpState.players = [];
+      switchTab('multiplayer');
+    }
+
     // ===== ユーティリティ =====
 
     // トースト通知
