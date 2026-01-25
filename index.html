@@ -1223,6 +1223,468 @@
     }
     .toast.success { border-color: #22c55e; }
     .toast.error { border-color: #ef4444; }
+
+    /* ===== DIARY ===== */
+    .diary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 16px 0;
+    }
+    .diary-title {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .diary-add-btn {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .diary-summary {
+      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .diary-summary-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #a5b4fc;
+    }
+    .diary-summary-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .diary-stat {
+      text-align: center;
+    }
+    .diary-stat-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      font-weight: 900;
+      color: #fff;
+    }
+    .diary-stat-label {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .diary-calendar {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .diary-calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .diary-cal-nav {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 8px;
+    }
+    .diary-cal-nav:hover { color: #fff; }
+    .diary-cal-month {
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .diary-calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .diary-cal-day-header {
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+      padding: 4px;
+    }
+    .diary-cal-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      color: #888;
+    }
+    .diary-cal-day:hover { background: rgba(255,255,255,0.05); }
+    .diary-cal-day.today {
+      background: rgba(99,102,241,0.2);
+      color: #6366f1;
+      font-weight: 700;
+    }
+    .diary-cal-day.has-entry::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      width: 4px;
+      height: 4px;
+      background: #22c55e;
+      border-radius: 50%;
+    }
+    .diary-cal-day.has-quiz::after {
+      background: #f59e0b;
+    }
+    .diary-cal-day.other-month {
+      color: #444;
+    }
+
+    .diary-entries-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .diary-filter-select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .diary-entries {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 100px;
+    }
+    .diary-entry-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .diary-entry-card:hover {
+      border-color: rgba(99,102,241,0.3);
+      transform: translateY(-2px);
+    }
+    .diary-entry-card.quiz {
+      border-left: 3px solid #f59e0b;
+    }
+    .diary-entry-card.note {
+      border-left: 3px solid #6366f1;
+    }
+    .diary-entry-card.discovery {
+      border-left: 3px solid #22c55e;
+    }
+    .diary-entry-card.question {
+      border-left: 3px solid #ec4899;
+    }
+    .diary-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .diary-entry-type {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .diary-entry-type.quiz { background: rgba(245,158,11,0.2); color: #f59e0b; }
+    .diary-entry-type.note { background: rgba(99,102,241,0.2); color: #6366f1; }
+    .diary-entry-type.discovery { background: rgba(34,197,94,0.2); color: #22c55e; }
+    .diary-entry-type.question { background: rgba(236,72,153,0.2); color: #ec4899; }
+    .diary-entry-date {
+      font-size: 11px;
+      color: #666;
+    }
+    .diary-entry-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .diary-entry-preview {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .diary-entry-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .diary-entry-tag {
+      font-size: 10px;
+      background: rgba(255,255,255,0.05);
+      padding: 3px 8px;
+      border-radius: 10px;
+      color: #888;
+    }
+
+    /* Diary Editor Modal */
+    .diary-editor-modal, .diary-detail-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .diary-editor-content, .diary-detail-content {
+      background: #1a1a2e;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      border-radius: 24px 24px 0 0;
+      padding: 24px;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .diary-editor-header, .diary-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .diary-editor-header h2 {
+      font-size: 18px;
+      margin: 0;
+    }
+    .diary-editor-close, .diary-detail-back {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .diary-detail-back {
+      font-size: 14px;
+      color: #6366f1;
+    }
+    .diary-detail-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .diary-action-btn {
+      background: rgba(255,255,255,0.05);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .diary-action-btn.delete:hover {
+      background: rgba(239,68,68,0.2);
+    }
+
+    .diary-editor-type {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .diary-type-btn {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #888;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .diary-type-btn.selected {
+      border-color: #6366f1;
+      background: rgba(99,102,241,0.1);
+      color: #6366f1;
+    }
+
+    .diary-editor-field {
+      margin-bottom: 16px;
+    }
+    .diary-editor-field label {
+      display: block;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .diary-editor-field input,
+    .diary-editor-field textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 14px;
+      color: #fff;
+      font-size: 14px;
+      resize: none;
+    }
+    .diary-editor-field input:focus,
+    .diary-editor-field textarea:focus {
+      border-color: #6366f1;
+      outline: none;
+    }
+
+    .diary-topic-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .diary-topic-tag {
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      font-size: 12px;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .diary-topic-tag.selected {
+      border-color: #6366f1;
+      background: rgba(99,102,241,0.1);
+      color: #6366f1;
+    }
+
+    .diary-mood-select {
+      display: flex;
+      gap: 12px;
+    }
+    .diary-mood {
+      font-size: 28px;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: all 0.2s;
+    }
+    .diary-mood:hover { opacity: 0.7; }
+    .diary-mood.selected {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+
+    .diary-save-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    /* Diary Detail */
+    .diary-detail-date {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .diary-detail-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .diary-detail-body {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #ccc;
+      white-space: pre-wrap;
+      margin-bottom: 20px;
+    }
+    .diary-detail-meta {
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .diary-detail-meta-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .diary-detail-meta-row:last-child { margin-bottom: 0; }
+    .diary-detail-meta-label { color: #666; }
+
+    /* Quiz Record in Diary */
+    .diary-quiz-result {
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .diary-quiz-result-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .diary-quiz-result-badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .diary-quiz-result-badge.correct {
+      background: rgba(34,197,94,0.2);
+      color: #22c55e;
+    }
+    .diary-quiz-result-badge.wrong {
+      background: rgba(239,68,68,0.2);
+      color: #ef4444;
+    }
+
+    /* Empty State */
+    .diary-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+    .diary-empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .diary-empty-text {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -1275,14 +1737,14 @@
     <div class="nav-tab" data-screen="multiplayer" onclick="switchTab('multiplayer')">
       <span class="icon">👥</span> 対戦
     </div>
+    <div class="nav-tab" data-screen="diary" onclick="switchTab('diary')">
+      <span class="icon">📔</span> 日記
+    </div>
     <div class="nav-tab" data-screen="feed" onclick="switchTab('feed')">
       <span class="icon">🌍</span> みんな
     </div>
-    <div class="nav-tab" data-screen="create" onclick="switchTab('create')">
-      <span class="icon">✏️</span> 作る
-    </div>
     <div class="nav-tab" data-screen="werewolf" onclick="switchTab('werewolf')">
-      <span class="icon">🐺</span> AI人狼
+      <span class="icon">🐺</span> 人狼
     </div>
   </nav>
 
@@ -1437,7 +1899,131 @@
         </div>
       </div>
     </div>
-    
+
+    <!-- ===== DIARY SCREEN ===== -->
+    <div class="screen" id="diaryScreen">
+      <div class="diary-header">
+        <div class="diary-title">📔 探究日記</div>
+        <button onclick="showDiaryEditor()" class="diary-add-btn">+ 新規</button>
+      </div>
+
+      <!-- 今月のサマリー -->
+      <div class="diary-summary">
+        <div class="diary-summary-title">📊 今月の探究</div>
+        <div class="diary-summary-stats">
+          <div class="diary-stat">
+            <div class="diary-stat-num" id="diaryQuizCount">0</div>
+            <div class="diary-stat-label">クイズ</div>
+          </div>
+          <div class="diary-stat">
+            <div class="diary-stat-num" id="diaryCorrectRate">0%</div>
+            <div class="diary-stat-label">正解率</div>
+          </div>
+          <div class="diary-stat">
+            <div class="diary-stat-num" id="diaryEntryCount">0</div>
+            <div class="diary-stat-label">日記</div>
+          </div>
+          <div class="diary-stat">
+            <div class="diary-stat-num" id="diaryStreak">0</div>
+            <div class="diary-stat-label">連続日</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- カレンダービュー -->
+      <div class="diary-calendar">
+        <div class="diary-calendar-header">
+          <button onclick="prevMonth()" class="diary-cal-nav">◀</button>
+          <div class="diary-cal-month" id="diaryCalMonth">2025年1月</div>
+          <button onclick="nextMonth()" class="diary-cal-nav">▶</button>
+        </div>
+        <div class="diary-calendar-grid" id="diaryCalGrid">
+          <!-- Calendar will be generated by JS -->
+        </div>
+      </div>
+
+      <!-- 日記エントリーリスト -->
+      <div class="diary-entries-header">
+        <span>📝 最近の日記</span>
+        <select id="diaryFilter" onchange="filterDiaryEntries()" class="diary-filter-select">
+          <option value="all">すべて</option>
+          <option value="quiz">クイズ記録</option>
+          <option value="note">メモ</option>
+          <option value="discovery">発見</option>
+        </select>
+      </div>
+      <div class="diary-entries" id="diaryEntries">
+        <!-- Entries will be added here -->
+      </div>
+    </div>
+
+    <!-- ===== DIARY EDITOR MODAL ===== -->
+    <div class="diary-editor-modal" id="diaryEditorModal">
+      <div class="diary-editor-content">
+        <div class="diary-editor-header">
+          <h2 id="diaryEditorTitle">📝 新しい日記</h2>
+          <button onclick="closeDiaryEditor()" class="diary-editor-close">×</button>
+        </div>
+
+        <div class="diary-editor-type">
+          <button class="diary-type-btn selected" data-type="note" onclick="selectDiaryType(this)">📝 メモ</button>
+          <button class="diary-type-btn" data-type="discovery" onclick="selectDiaryType(this)">💡 発見</button>
+          <button class="diary-type-btn" data-type="question" onclick="selectDiaryType(this)">❓ 疑問</button>
+        </div>
+
+        <div class="diary-editor-field">
+          <label>タイトル</label>
+          <input type="text" id="diaryEditorTitleInput" placeholder="今日学んだこと..." maxlength="50">
+        </div>
+
+        <div class="diary-editor-field">
+          <label>内容</label>
+          <textarea id="diaryEditorContent" placeholder="詳しく書いてみよう...&#10;&#10;• 何を学んだ？&#10;• どう思った？&#10;• もっと知りたいことは？" rows="6"></textarea>
+        </div>
+
+        <div class="diary-editor-field">
+          <label>関連トピック</label>
+          <div class="diary-topic-tags" id="diaryTopicTags">
+            <span class="diary-topic-tag" data-topic="生き物" onclick="toggleDiaryTopic(this)">🐙 生き物</span>
+            <span class="diary-topic-tag" data-topic="宇宙" onclick="toggleDiaryTopic(this)">🚀 宇宙</span>
+            <span class="diary-topic-tag" data-topic="偉人" onclick="toggleDiaryTopic(this)">👤 偉人</span>
+            <span class="diary-topic-tag" data-topic="地理" onclick="toggleDiaryTopic(this)">🌍 地理</span>
+            <span class="diary-topic-tag" data-topic="科学" onclick="toggleDiaryTopic(this)">⚗️ 科学</span>
+            <span class="diary-topic-tag" data-topic="歴史" onclick="toggleDiaryTopic(this)">🏛️ 歴史</span>
+          </div>
+        </div>
+
+        <div class="diary-editor-field">
+          <label>気分</label>
+          <div class="diary-mood-select">
+            <span class="diary-mood selected" data-mood="happy" onclick="selectDiaryMood(this)">😊</span>
+            <span class="diary-mood" data-mood="thinking" onclick="selectDiaryMood(this)">🤔</span>
+            <span class="diary-mood" data-mood="surprised" onclick="selectDiaryMood(this)">😮</span>
+            <span class="diary-mood" data-mood="confused" onclick="selectDiaryMood(this)">😵</span>
+            <span class="diary-mood" data-mood="excited" onclick="selectDiaryMood(this)">🤩</span>
+          </div>
+        </div>
+
+        <button onclick="saveDiaryEntry()" class="diary-save-btn">💾 保存する</button>
+      </div>
+    </div>
+
+    <!-- ===== DIARY DETAIL MODAL ===== -->
+    <div class="diary-detail-modal" id="diaryDetailModal">
+      <div class="diary-detail-content">
+        <div class="diary-detail-header">
+          <button onclick="closeDiaryDetail()" class="diary-detail-back">← 戻る</button>
+          <div class="diary-detail-actions">
+            <button onclick="editDiaryEntry()" class="diary-action-btn">✏️</button>
+            <button onclick="deleteDiaryEntry()" class="diary-action-btn delete">🗑️</button>
+          </div>
+        </div>
+        <div id="diaryDetailBody">
+          <!-- Detail content will be inserted here -->
+        </div>
+      </div>
+    </div>
+
     <!-- ===== FEED SCREEN ===== -->
     <div class="screen" id="feedScreen">
       <div class="feed-header">
@@ -1988,18 +2574,18 @@
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      const mainScreens = ['homeScreen','feedScreen','createScreen','werewolfScreen','multiplayerScreen'];
+      const mainScreens = ['homeScreen','feedScreen','createScreen','werewolfScreen','multiplayerScreen','diaryScreen'];
       document.getElementById('backBtn').classList.toggle('show', !mainScreens.includes(id));
       document.getElementById('navTabs').style.display = mainScreens.includes(id) ? 'flex' : 'none';
     }
-    
+
     function switchTab(tab) {
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
       document.querySelector(`[data-screen="${tab}"]`)?.classList.add('active');
       if(tab === 'home') showScreen('homeScreen');
       else if(tab === 'multiplayer') showScreen('multiplayerScreen');
+      else if(tab === 'diary') { initDiary(); showScreen('diaryScreen'); }
       else if(tab === 'feed') { renderFeed(); showScreen('feedScreen'); }
-      else if(tab === 'create') showScreen('createScreen');
       else if(tab === 'werewolf') showScreen('werewolfScreen');
     }
     
@@ -2257,7 +2843,7 @@
       const icon = document.getElementById('resultIcon');
       const title = document.getElementById('resultTitle');
       const subtitle = document.getElementById('resultSubtitle');
-      
+
       if(correct) {
         icon.textContent = '🎉'; icon.classList.add('bounce');
         title.textContent = 'YOU WIN!'; title.className = 'result-title win';
@@ -2267,13 +2853,13 @@
         title.textContent = 'AI WINS'; title.className = 'result-title lose';
         subtitle.textContent = 'FAKEに騙された...';
       }
-      
+
       document.getElementById('resultExplain').innerHTML = `
         <div class="result-explain-label">THE FAKE WAS...</div>
         <div class="result-explain-answer">${letters[correctIdx]}. ${q.facts[correctIdx].text}</div>
         <div class="result-explain-text">${q.explanation}</div>
       `;
-      
+
       const total = state.humanWins + state.aiWins;
       const humanPct = total > 0 ? Math.round((state.humanWins / total) * 100) : 50;
       const aiPct = 100 - humanPct;
@@ -2281,11 +2867,14 @@
       document.getElementById('resultBarHuman').textContent = humanPct + '%';
       document.getElementById('resultBarAI').style.width = aiPct + '%';
       document.getElementById('resultBarAI').textContent = aiPct + '%';
-      
+
       document.getElementById('resultWins').textContent = state.humanWins;
       document.getElementById('resultStreak').textContent = state.streak;
       document.getElementById('resultStreak').className = state.streak > 0 ? 'result-stat-value positive' : 'result-stat-value';
-      
+
+      // クイズ結果を日記に自動記録
+      recordQuizToDiary(q, correct, state.keyword || state.topic, state.difficulty);
+
       showScreen('resultScreen');
       setTimeout(() => icon.classList.remove('bounce','shake'), 500);
     }
@@ -4494,6 +5083,461 @@ ${roleHint}
         state.aiWins = stats.aiWins || 0;
         updateStats();
       }
+    }
+
+    // ===== 探究日記 =====
+
+    let diaryState = {
+      entries: JSON.parse(localStorage.getItem('diaryEntries') || '[]'),
+      currentMonth: new Date(),
+      editingEntry: null,
+      selectedType: 'note',
+      selectedTopics: [],
+      selectedMood: 'happy',
+      viewingEntryId: null
+    };
+
+    // 日記タブに切り替えたときの処理
+    function initDiary() {
+      renderDiaryCalendar();
+      renderDiaryEntries();
+      updateDiaryStats();
+    }
+
+    // 日記の統計を更新
+    function updateDiaryStats() {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      // 今月のエントリーをフィルター
+      const monthEntries = diaryState.entries.filter(e => {
+        const d = new Date(e.date);
+        return d >= monthStart && d <= monthEnd;
+      });
+
+      // クイズ数
+      const quizEntries = monthEntries.filter(e => e.type === 'quiz');
+      document.getElementById('diaryQuizCount').textContent = quizEntries.length;
+
+      // 正解率
+      const correctQuizzes = quizEntries.filter(e => e.quizResult?.correct).length;
+      const rate = quizEntries.length > 0 ? Math.round((correctQuizzes / quizEntries.length) * 100) : 0;
+      document.getElementById('diaryCorrectRate').textContent = rate + '%';
+
+      // 日記数
+      document.getElementById('diaryEntryCount').textContent = monthEntries.length;
+
+      // 連続日数を計算
+      const streak = calculateStreak();
+      document.getElementById('diaryStreak').textContent = streak;
+    }
+
+    // 連続日数を計算
+    function calculateStreak() {
+      if (diaryState.entries.length === 0) return 0;
+
+      const sortedDates = [...new Set(diaryState.entries.map(e =>
+        new Date(e.date).toDateString()
+      ))].sort((a, b) => new Date(b) - new Date(a));
+
+      let streak = 0;
+      let checkDate = new Date();
+      checkDate.setHours(0, 0, 0, 0);
+
+      for (const dateStr of sortedDates) {
+        const entryDate = new Date(dateStr);
+        const diffDays = Math.floor((checkDate - entryDate) / (1000 * 60 * 60 * 24));
+
+        if (diffDays <= 1) {
+          streak++;
+          checkDate = entryDate;
+        } else {
+          break;
+        }
+      }
+
+      return streak;
+    }
+
+    // カレンダーを描画
+    function renderDiaryCalendar() {
+      const year = diaryState.currentMonth.getFullYear();
+      const month = diaryState.currentMonth.getMonth();
+
+      document.getElementById('diaryCalMonth').textContent = `${year}年${month + 1}月`;
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDayOfWeek = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+
+      // 前月の日数
+      const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+      // エントリーがある日をマップ
+      const entryDates = {};
+      diaryState.entries.forEach(e => {
+        const d = new Date(e.date);
+        if (d.getFullYear() === year && d.getMonth() === month) {
+          const day = d.getDate();
+          if (!entryDates[day]) entryDates[day] = [];
+          entryDates[day].push(e.type);
+        }
+      });
+
+      const today = new Date();
+      const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+      const todayDate = today.getDate();
+
+      let html = `
+        <div class="diary-cal-day-header">日</div>
+        <div class="diary-cal-day-header">月</div>
+        <div class="diary-cal-day-header">火</div>
+        <div class="diary-cal-day-header">水</div>
+        <div class="diary-cal-day-header">木</div>
+        <div class="diary-cal-day-header">金</div>
+        <div class="diary-cal-day-header">土</div>
+      `;
+
+      // 前月の日
+      for (let i = startDayOfWeek - 1; i >= 0; i--) {
+        html += `<div class="diary-cal-day other-month">${prevMonthLastDay - i}</div>`;
+      }
+
+      // 今月の日
+      for (let day = 1; day <= daysInMonth; day++) {
+        const isToday = isCurrentMonth && day === todayDate;
+        const hasEntry = entryDates[day];
+        const hasQuiz = hasEntry && hasEntry.includes('quiz');
+
+        let classes = 'diary-cal-day';
+        if (isToday) classes += ' today';
+        if (hasEntry) classes += hasQuiz ? ' has-quiz' : ' has-entry';
+
+        html += `<div class="${classes}" onclick="showDayEntries(${year}, ${month}, ${day})">${day}</div>`;
+      }
+
+      // 次月の日
+      const remainingCells = 42 - (startDayOfWeek + daysInMonth);
+      for (let i = 1; i <= remainingCells; i++) {
+        html += `<div class="diary-cal-day other-month">${i}</div>`;
+      }
+
+      document.getElementById('diaryCalGrid').innerHTML = html;
+    }
+
+    function prevMonth() {
+      diaryState.currentMonth.setMonth(diaryState.currentMonth.getMonth() - 1);
+      renderDiaryCalendar();
+    }
+
+    function nextMonth() {
+      diaryState.currentMonth.setMonth(diaryState.currentMonth.getMonth() + 1);
+      renderDiaryCalendar();
+    }
+
+    // 特定日のエントリーを表示
+    function showDayEntries(year, month, day) {
+      const targetDate = new Date(year, month, day);
+      const dayEntries = diaryState.entries.filter(e => {
+        const d = new Date(e.date);
+        return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+      });
+
+      if (dayEntries.length === 0) {
+        showToast(`${month + 1}/${day}の日記はありません`);
+        return;
+      }
+
+      renderDiaryEntries(dayEntries);
+    }
+
+    // 日記エントリーを描画
+    function renderDiaryEntries(entries = null) {
+      const entriesToRender = entries || diaryState.entries;
+      const filter = document.getElementById('diaryFilter')?.value || 'all';
+
+      let filtered = entriesToRender;
+      if (filter !== 'all') {
+        filtered = entriesToRender.filter(e => e.type === filter);
+      }
+
+      // 日付で降順ソート
+      filtered = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (filtered.length === 0) {
+        document.getElementById('diaryEntries').innerHTML = `
+          <div class="diary-empty">
+            <div class="diary-empty-icon">📔</div>
+            <div class="diary-empty-text">まだ日記がありません<br>クイズで学んだことを記録しよう！</div>
+            <button onclick="showDiaryEditor()" class="diary-add-btn">+ 最初の日記を書く</button>
+          </div>
+        `;
+        return;
+      }
+
+      const typeLabels = {
+        quiz: '🎮 クイズ記録',
+        note: '📝 メモ',
+        discovery: '💡 発見',
+        question: '❓ 疑問'
+      };
+
+      document.getElementById('diaryEntries').innerHTML = filtered.map(entry => {
+        const date = new Date(entry.date);
+        const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+        return `
+          <div class="diary-entry-card ${entry.type}" onclick="showDiaryDetail('${entry.id}')">
+            <div class="diary-entry-header">
+              <span class="diary-entry-type ${entry.type}">${typeLabels[entry.type]}</span>
+              <span class="diary-entry-date">${dateStr}</span>
+            </div>
+            <div class="diary-entry-title">
+              ${entry.mood ? getMoodEmoji(entry.mood) : ''} ${entry.title}
+            </div>
+            <div class="diary-entry-preview">${entry.content}</div>
+            ${entry.topics && entry.topics.length > 0 ? `
+              <div class="diary-entry-tags">
+                ${entry.topics.map(t => `<span class="diary-entry-tag">${t}</span>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getMoodEmoji(mood) {
+      const moods = {
+        happy: '😊',
+        thinking: '🤔',
+        surprised: '😮',
+        confused: '😵',
+        excited: '🤩'
+      };
+      return moods[mood] || '';
+    }
+
+    function filterDiaryEntries() {
+      renderDiaryEntries();
+    }
+
+    // 日記エディターを表示
+    function showDiaryEditor(entryId = null) {
+      diaryState.editingEntry = entryId;
+
+      if (entryId) {
+        // 編集モード
+        const entry = diaryState.entries.find(e => e.id === entryId);
+        if (!entry) return;
+
+        document.getElementById('diaryEditorTitle').textContent = '✏️ 日記を編集';
+        document.getElementById('diaryEditorTitleInput').value = entry.title;
+        document.getElementById('diaryEditorContent').value = entry.content;
+        diaryState.selectedType = entry.type;
+        diaryState.selectedTopics = entry.topics || [];
+        diaryState.selectedMood = entry.mood || 'happy';
+      } else {
+        // 新規作成モード
+        document.getElementById('diaryEditorTitle').textContent = '📝 新しい日記';
+        document.getElementById('diaryEditorTitleInput').value = '';
+        document.getElementById('diaryEditorContent').value = '';
+        diaryState.selectedType = 'note';
+        diaryState.selectedTopics = [];
+        diaryState.selectedMood = 'happy';
+      }
+
+      // UI更新
+      document.querySelectorAll('.diary-type-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.type === diaryState.selectedType);
+      });
+      document.querySelectorAll('.diary-topic-tag').forEach(tag => {
+        tag.classList.toggle('selected', diaryState.selectedTopics.includes(tag.dataset.topic));
+      });
+      document.querySelectorAll('.diary-mood').forEach(mood => {
+        mood.classList.toggle('selected', mood.dataset.mood === diaryState.selectedMood);
+      });
+
+      document.getElementById('diaryEditorModal').style.display = 'flex';
+    }
+
+    function closeDiaryEditor() {
+      document.getElementById('diaryEditorModal').style.display = 'none';
+      diaryState.editingEntry = null;
+    }
+
+    function selectDiaryType(el) {
+      document.querySelectorAll('.diary-type-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      diaryState.selectedType = el.dataset.type;
+    }
+
+    function toggleDiaryTopic(el) {
+      const topic = el.dataset.topic;
+      el.classList.toggle('selected');
+
+      if (diaryState.selectedTopics.includes(topic)) {
+        diaryState.selectedTopics = diaryState.selectedTopics.filter(t => t !== topic);
+      } else {
+        diaryState.selectedTopics.push(topic);
+      }
+    }
+
+    function selectDiaryMood(el) {
+      document.querySelectorAll('.diary-mood').forEach(m => m.classList.remove('selected'));
+      el.classList.add('selected');
+      diaryState.selectedMood = el.dataset.mood;
+    }
+
+    // 日記を保存
+    function saveDiaryEntry() {
+      const title = document.getElementById('diaryEditorTitleInput').value.trim();
+      const content = document.getElementById('diaryEditorContent').value.trim();
+
+      if (!title) {
+        showToast('❌ タイトルを入力してください', 'error');
+        return;
+      }
+
+      if (diaryState.editingEntry) {
+        // 編集
+        const entry = diaryState.entries.find(e => e.id === diaryState.editingEntry);
+        if (entry) {
+          entry.title = title;
+          entry.content = content;
+          entry.type = diaryState.selectedType;
+          entry.topics = diaryState.selectedTopics;
+          entry.mood = diaryState.selectedMood;
+          entry.updatedAt = new Date().toISOString();
+        }
+        showToast('✏️ 日記を更新しました', 'success');
+      } else {
+        // 新規作成
+        const newEntry = {
+          id: 'diary_' + Date.now(),
+          title,
+          content,
+          type: diaryState.selectedType,
+          topics: diaryState.selectedTopics,
+          mood: diaryState.selectedMood,
+          date: new Date().toISOString(),
+          createdAt: new Date().toISOString()
+        };
+        diaryState.entries.unshift(newEntry);
+        showToast('📔 日記を保存しました', 'success');
+      }
+
+      localStorage.setItem('diaryEntries', JSON.stringify(diaryState.entries));
+      closeDiaryEditor();
+      renderDiaryCalendar();
+      renderDiaryEntries();
+      updateDiaryStats();
+    }
+
+    // 日記詳細を表示
+    function showDiaryDetail(entryId) {
+      const entry = diaryState.entries.find(e => e.id === entryId);
+      if (!entry) return;
+
+      diaryState.viewingEntryId = entryId;
+
+      const date = new Date(entry.date);
+      const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+      const typeLabels = {
+        quiz: '🎮 クイズ記録',
+        note: '📝 メモ',
+        discovery: '💡 発見',
+        question: '❓ 疑問'
+      };
+
+      let quizResultHtml = '';
+      if (entry.type === 'quiz' && entry.quizResult) {
+        quizResultHtml = `
+          <div class="diary-quiz-result">
+            <div class="diary-quiz-result-header">
+              <span>クイズ結果</span>
+              <span class="diary-quiz-result-badge ${entry.quizResult.correct ? 'correct' : 'wrong'}">
+                ${entry.quizResult.correct ? '✓ 正解' : '✗ 不正解'}
+              </span>
+            </div>
+            <div style="font-size:13px;color:#888;">
+              トピック: ${entry.quizResult.topic || '不明'}<br>
+              難易度: ${entry.quizResult.difficulty || '不明'}
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('diaryDetailBody').innerHTML = `
+        <div class="diary-detail-date">${dateStr}</div>
+        <div class="diary-detail-title">
+          ${entry.mood ? getMoodEmoji(entry.mood) : ''} ${entry.title}
+        </div>
+        <span class="diary-entry-type ${entry.type}" style="margin-bottom:16px;display:inline-block;">${typeLabels[entry.type]}</span>
+        <div class="diary-detail-body">${entry.content}</div>
+        ${quizResultHtml}
+        ${entry.topics && entry.topics.length > 0 ? `
+          <div class="diary-detail-meta">
+            <div class="diary-detail-meta-row">
+              <span class="diary-detail-meta-label">関連トピック</span>
+              <span>${entry.topics.join(', ')}</span>
+            </div>
+          </div>
+        ` : ''}
+      `;
+
+      document.getElementById('diaryDetailModal').style.display = 'flex';
+    }
+
+    function closeDiaryDetail() {
+      document.getElementById('diaryDetailModal').style.display = 'none';
+      diaryState.viewingEntryId = null;
+    }
+
+    function editDiaryEntry() {
+      if (diaryState.viewingEntryId) {
+        closeDiaryDetail();
+        showDiaryEditor(diaryState.viewingEntryId);
+      }
+    }
+
+    function deleteDiaryEntry() {
+      if (!diaryState.viewingEntryId) return;
+
+      if (confirm('この日記を削除しますか？')) {
+        diaryState.entries = diaryState.entries.filter(e => e.id !== diaryState.viewingEntryId);
+        localStorage.setItem('diaryEntries', JSON.stringify(diaryState.entries));
+        closeDiaryDetail();
+        renderDiaryCalendar();
+        renderDiaryEntries();
+        updateDiaryStats();
+        showToast('🗑️ 日記を削除しました');
+      }
+    }
+
+    // クイズ結果を日記に自動記録
+    function recordQuizToDiary(quiz, wasCorrect, topic, difficulty) {
+      const entry = {
+        id: 'diary_' + Date.now(),
+        title: quiz.title,
+        content: `クイズに${wasCorrect ? '正解' : '不正解'}しました。\n\n【解説】\n${quiz.explanation}`,
+        type: 'quiz',
+        topics: [topic],
+        mood: wasCorrect ? 'happy' : 'thinking',
+        date: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        quizResult: {
+          correct: wasCorrect,
+          topic: topic,
+          difficulty: difficulty,
+          quizTitle: quiz.title
+        }
+      };
+
+      diaryState.entries.unshift(entry);
+      localStorage.setItem('diaryEntries', JSON.stringify(diaryState.entries));
     }
 
     // ===== INIT =====
